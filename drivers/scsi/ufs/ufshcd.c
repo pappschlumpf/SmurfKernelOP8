@@ -8730,7 +8730,6 @@ static int ufs_get_device_desc(struct ufs_hba *hba,
 
 	model_index = desc_buf[DEVICE_DESC_PARAM_PRDCT_NAME];
 
-
 	/* Enable WB only for UFS-3.1 OR if desc len >= 0x59 */
 	if ((dev_desc->wspecversion >= 0x310) ||
 	    (dev_desc->wmanufacturerid == UFS_VENDOR_TOSHIBA &&
@@ -8750,6 +8749,7 @@ static int ufs_get_device_desc(struct ufs_hba *hba,
 
 	err = ufshcd_read_string_desc(hba, model_index, desc_buf,
 				      QUERY_DESC_MAX_SIZE, true/*ASCII*/);
+				      
 	if (err) {
 		dev_err(hba->dev, "%s: Failed reading Product Name. err = %d\n",
 			__func__, err);
