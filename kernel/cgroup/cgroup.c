@@ -2707,6 +2707,17 @@ void cgroup_procs_write_finish(struct task_struct *task)
 	struct cgroup_subsys *ss;
 	int ssid;
 
+<<<<<<< HEAD
+=======
+	/* This covers boosting for app launches and app transitions */
+	if (!ret && !threadgroup &&
+	    !strcmp(of->kn->parent->name, "top-app") &&
+	    task_is_zygote(tsk->parent)) {
+		cpu_input_boost_kick_max(500);
+		devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 500);
+	}
+
+>>>>>>> 0dd65027e250... kernel: Use task struct instead of pid to check for zygote
 	/* release reference from cgroup_procs_write_start() */
 	put_task_struct(task);
 
