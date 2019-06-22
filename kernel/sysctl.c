@@ -140,6 +140,12 @@ static int one_thousand = 1000;
 #ifdef CONFIG_DIRECT_SWAPPINESS
 static int two_hundred = 200;
 #endif
+#ifdef CONFIG_INCREASE_MAXIMUM_SWAPPINESS
+static int max_swappiness = 200;
+#endif
+#ifdef CONFIG_SCHED_WALT
+static int two_million = 2000000;
+#endif
 unsigned long sysctl_blkdev_issue_flush_count;
 
 #ifdef CONFIG_PRINTK
@@ -1678,6 +1684,11 @@ static struct ctl_table vm_table[] = {
 		.extra1		= &zero,
 #ifdef CONFIG_DIRECT_SWAPPINESS
 		.extra2		= &two_hundred,
+#else
+		.extra2		= &one_hundred,
+#endif
+#ifdef CONFIG_INCREASE_MAXIMUM_SWAPPINESS
+		.extra2         = &max_swappiness,
 #else
 		.extra2		= &one_hundred,
 #endif
