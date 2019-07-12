@@ -308,7 +308,8 @@ int lzo1x_1_compress(const unsigned char *in, size_t in_len,
 	*op++ = LZO_VERSION;
 
 	while (l > 20) {
-		size_t ll = l <= (M4_MAX_OFFSET + 1) ? l : (M4_MAX_OFFSET + 1);
+		size_t ll = l <= (m4_max_offset + 1) ? l : (m4_max_offset + 1);
+		// check for address space wraparound
 		if (((uintptr_t) ip + ll + ((t + ll) >> 5)) <= (uintptr_t) ip)
 			break;
 		BUILD_BUG_ON(D_SIZE * sizeof(lzo_dict_t) > LZO1X_1_MEM_COMPRESS);
