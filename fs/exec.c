@@ -1863,7 +1863,7 @@ static int __do_execve_file(int fd, struct filename *filename,
 	if (retval < 0)
 		goto out;
 
-	would_dump(bprm, bprm.file);
+	would_dump(&bprm, bprm.file);
 
 	retval = exec_binprm(&bprm);
 	if (retval < 0)
