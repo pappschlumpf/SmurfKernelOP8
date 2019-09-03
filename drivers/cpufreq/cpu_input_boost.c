@@ -19,7 +19,7 @@
 #include <linux/moduleparam.h>
 #include <linux/cpu_input_boost.h>
 #include <linux/power_hal.h>
-#include "../gpu/msm/kgsl.h"
+#include <linux/msm_kgsl.h>
 #include "../gpu/msm/kgsl_pwrscale.h"
 #include "../gpu/msm/kgsl_device.h"
 #include <linux/version.h>
@@ -55,16 +55,16 @@ unsigned int sleep_freq_hp __read_mostly = 710400;
 unsigned int sleep_freq_gold __read_mostly = 825600;
 static unsigned int gpu_boost_freq __read_mostly = CONFIG_GPU_BOOST_FREQ;
 static unsigned int gpu_min_freq __read_mostly = CONFIG_GPU_MIN_FREQ;
-static unsigned int gpu_sleep_freq __read_mostly = 180; 
+static unsigned int gpu_sleep_freq __read_mostly = 200; 
 static unsigned short input_boost_duration __read_mostly = CONFIG_INPUT_BOOST_DURATION_MS;
 static unsigned short flex_boost_duration __read_mostly = CONFIG_FLEX_BOOST_DURATION_MS;
 static unsigned int input_thread_prio __read_mostly = CONFIG_INPUT_THREAD_PRIORITY;
 static unsigned int gpu_boost_extender_ms __read_mostly = CONFIG_GPU_BOOST_EXTENDER_MS;
 static bool little_only __read_mostly = false;
 bool boost_gold __read_mostly = true;
-static bool gpu_oc __read_mostly = false;
+static bool gpu_oc __read_mostly = true;
 static bool ufs_boost __read_mostly = false;
-static bool smumode = true;
+static bool smumode = false;
 
 unsigned int base_stune_boost __read_mostly = 20;
 unsigned int default_level_stune_boost __read_mostly = 5;
@@ -75,7 +75,7 @@ static unsigned int stune_boost_extender_ms __read_mostly = CONFIG_STUNE_BOOST_E
 static unsigned int max_stune_boost_extender_ms __read_mostly = CONFIG_MAX_STUNE_BOOST_EXTENDER_MS;
 static unsigned int sleep_level_stune_boost __read_mostly = 1;
 
-static unsigned int gpu_prev_freq=257;
+static unsigned int gpu_prev_freq=200;
 
 enum {
 	SCREEN_ON,
@@ -294,20 +294,20 @@ static void set_gpu_boost(struct boost_drv *b, int freq)
 		gpu_prev_freq = freq;
 
 	if (likely(gpu_oc)) {
-		if (freq == 427)
+		if (freq == 441)
 			level = 5;
-		if (freq == 345)
+		if (freq == 416)
 			level = 6;
-		if (freq == 257)
+		if (freq == 305)
 			level = 7;
-		if (freq == 180)
+		if (freq == 200)
 			level = 8;
 	} else {
-		if (freq == 427)
+		if (freq == 416)
 			level = 3;
-		if (freq == 345)
+		if (freq == 305)
 			level = 4;
-		if (freq == 257)
+		if (freq == 200)
 			level = 5;
 	}
 
