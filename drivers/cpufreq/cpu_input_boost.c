@@ -815,7 +815,7 @@ static int cpu_notifier_cb(struct notifier_block *nb, unsigned long action,
 	if (action != CPUFREQ_ADJUST)
 		return NOTIFY_OK;
 
-	if (strcmp(policy->governor->name, "smurfutil"))
+	if (likely(strcmp(policy->governor->name, "smurfutil")))
 		smumode = true;
 	else 
 		smumode = false;
