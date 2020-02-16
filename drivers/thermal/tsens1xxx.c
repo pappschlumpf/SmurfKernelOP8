@@ -490,7 +490,6 @@ static const struct tsens_ops ops_tsens1xxx = {
 	.interrupts_reg = tsens1xxx_register_interrupts,
 	.sensor_en = tsens1xxx_hw_sensor_en,
 	.calibrate = calibrate_8937,
-	.dbg = tsens2xxx_dbg,
 };
 
 const struct tsens_data data_tsens14xx = {
@@ -509,7 +508,6 @@ static const struct tsens_ops ops_tsens1xxx_405 = {
 	.interrupts_reg = tsens1xxx_register_interrupts,
 	.sensor_en = tsens1xxx_hw_sensor_en,
 	.calibrate = calibrate_405,
-	.dbg = tsens2xxx_dbg,
 };
 
 const struct tsens_data data_tsens14xx_405 = {

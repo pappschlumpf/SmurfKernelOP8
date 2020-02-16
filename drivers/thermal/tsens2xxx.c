@@ -837,7 +837,6 @@ static const struct tsens_ops ops_tsens2xxx = {
 	.get_temp	= tsens2xxx_get_temp,
 	.set_trips	= tsens2xxx_set_trip_temp,
 	.interrupts_reg	= tsens2xxx_register_interrupts,
-	.dbg		= tsens2xxx_dbg,
 	.sensor_en	= tsens2xxx_hw_sensor_en,
 };
 
