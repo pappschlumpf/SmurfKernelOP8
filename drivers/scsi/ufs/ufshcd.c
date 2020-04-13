@@ -59,6 +59,10 @@ static int ufshcd_wb_buf_flush_disable(struct ufs_hba *hba);
 static bool ufshcd_wb_is_buf_flush_needed(struct ufs_hba *hba);
 static int ufshcd_wb_toggle_flush_during_h8(struct ufs_hba *hba, bool set);
 
+#include <linux/power_hal.h>
+
+struct Scsi_Host *ph_host;
+
 #ifdef CONFIG_DEBUG_FS
 
 static int ufshcd_tag_req_type(struct request *rq)
@@ -2487,20 +2491,43 @@ static ssize_t ufshcd_clkgate_enable_store(struct device *dev,
 		return -EINVAL;
 
 	value = !!value;
+
+	spin_lock_irqsave(hba->host->host_lock, flags);
+	if (value == hba->clk_gating.is_enabled)
+		goto out;
+
+	if (value)
+		hba->clk_gating.active_reqs--;
+	else
+		hba->clk_gating.active_reqs++;
+
+	hba->clk_gating.is_enabled = value;
+out:
+	spin_unlock_irqrestore(hba->host->host_lock, flags);
+	return count;
+}
+
+void set_ufshcd_clkgate_enable_status(u32 value)
+{
+	unsigned long flags;
+	struct ufs_hba *hba = shost_priv(ph_host);
+
+	/* Kang from ufshcd_clkgate_enable_store() */
+
+	value = !!value;
+
+	spin_lock_irqsave(hba->host->host_lock, flags);
 	if (value == hba->clk_gating.is_enabled)
 		goto out;
 
 	if (value) {
-		ufshcd_release(hba, false);
+		hba->clk_gating.active_reqs--;
 	} else {
-		spin_lock_irqsave(hba->host->host_lock, flags);
 		hba->clk_gating.active_reqs++;
-		spin_unlock_irqrestore(hba->host->host_lock, flags);
 	}
-
 	hba->clk_gating.is_enabled = value;
 out:
-	return count;
+	spin_unlock_irqrestore(hba->host->host_lock, flags);
 }
 
 static enum hrtimer_restart ufshcd_clkgate_hrtimer_handler(
@@ -11141,6 +11168,8 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 	struct Scsi_Host *host = hba->host;
 	struct device *dev = hba->dev;
 	char recovery_wq_name[sizeof("ufs_recovery_00")];
+
+	ph_host = hba->host;
 
 	if (!mmio_base) {
 		dev_err(hba->dev,
