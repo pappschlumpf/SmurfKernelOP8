@@ -620,7 +620,7 @@ int get_sid(u32 *sid, u32 session_type)
 	return (i == MAX_SUPPORTED_INSTANCES);
 }
 
-void put_sid(u32 sid)
+inline void put_sid(u32 sid)
 {
 	if (!sid || sid > MAX_SUPPORTED_INSTANCES) {
 		d_vpr_e("%s: invalid sid %#x\n",
