@@ -214,7 +214,8 @@ struct tsens_device {
 	struct workqueue_struct		*tsens_reinit_work;
 	struct work_struct		therm_fwk_notify;
 	bool				tsens_reinit_wa;
-	struct tsens_sensor             sensor[0];
+	int				tsens_reinit_cnt;
+	struct tsens_sensor		sensor[0];
 };
 
 extern const struct tsens_data data_tsens2xxx, data_tsens23xx, data_tsens24xx,
