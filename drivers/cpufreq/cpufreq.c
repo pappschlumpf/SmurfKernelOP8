@@ -35,8 +35,9 @@
 
 #include <linux/pm_qos.h>
 #include <trace/events/power.h>
+#ifdef CONFIG_CONTROL_CENTER
 #include <oneplus/control_center/control_center_helper.h>
-#include <oneplus/houston/houston_helper.h>
+#endif
 #define GOLD_CPU_NUMBER 4
 #define GOLD_PLUS_CPU_NUMBER 7
 
@@ -552,6 +553,7 @@ unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
 	min_target = clamp_val(policy->min, policy->min, policy->max);
 	policy->min_idx = cpufreq_frequency_table_target(policy, min_target, CPUFREQ_RELATION_L);
 #endif
+#ifdef CONFIG_CONTROL_CENTER
 	if (policy->cpu >= cluster2_first_cpu)
 		qos = &c2_qos_request_value;
 	else {
@@ -561,17 +563,23 @@ unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
 	target_freq = clamp_val(target_freq, qos->min_cpufreq,
 				qos->max_cpufreq);
 	policy->cached_target_freq = target_freq;
-
+#endif
 	if (cpufreq_driver->target_index) {
 		int idx;
 
 // rock.lin@ASTI, 2019/12/12, add for pccore CONFIG_PCCORE
 		idx = cpufreq_frequency_table_target(policy, target_freq,
+#ifdef CONFIG_PCORE											 
 			(get_op_select_freq_enable() &&
 				(ht_pcc_alwayson() || !ccdm_any_hint())) ? CPUFREQ_RELATION_OP : CPUFREQ_RELATION_L);
+#else
+									     CPUFREQ_RELATION_L);
+#endif
 		policy->cached_resolved_idx = idx;
 // rock.lin@ASTI, 2019/12/12, add for pccore CONFIG_PCCORE
+#ifdef CONFIG_PCORE	
 		trace_cpu_frequency_select(target_freq, policy->freq_table[idx].frequency, idx, policy->cpu, 1);
+#endif
 		return policy->freq_table[idx].frequency;
 	}
 

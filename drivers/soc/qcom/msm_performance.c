@@ -18,9 +18,9 @@
 #include <linux/input.h>
 #include <linux/kthread.h>
 #include <linux/sched/core_ctl.h>
-
+#ifdef CONFIG_CONTROL_CENTER
 #include <linux/oem/control_center.h>
-
+#endif
 /*
  * Sched will provide the data for every 20ms window,
  * will collect the data for 15 windows(300ms) and then update
