@@ -39,15 +39,13 @@ int pfk_initialize_key_table(struct ice_device *ice_dev);
 int pfk_remove(struct ice_device *ice_dev);
 
 #else
-static inline int pfk_load_key_start(const struct bio *bio, struct ice_device *ice_dev,
-			struct ice_crypto_setting *ice_setting,
-				bool *is_pfe, bool async)
+static inline int pfk_load_key_start(const struct bio *bio,
+	struct ice_crypto_setting *ice_setting, bool *is_pfe, bool async)
 {
 	return -ENODEV;
 }
 
-static inline int pfk_load_key_end(const struct bio *bio, struct ice_device *ice_dev,
-			bool *is_pfe)
+static inline int pfk_load_key_end(const struct bio *bio, bool *is_pfe)
 {
 	return -ENODEV;
 }
@@ -64,7 +62,7 @@ static inline int pfk_fbe_clear_key(const unsigned char *key, size_t key_size,
 	return -ENODEV;
 }
 
-static inline void pfk_clear_on_reset(struct ice_device *ice_dev)
+static inline void pfk_clear_on_reset(void)
 {}
 
 static inline int pfk_initialize_key_table(struct ice_device *ice_dev)
