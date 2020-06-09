@@ -1559,7 +1559,9 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags,
 		    p->prio < cpu_rq(target)->rt.highest_prio.curr))
 			cpu = target;
 	}
+#ifdef CONFIG_OPCHAIN
 	cpu_dist_inc(p, cpu);
+#endif
 	rcu_read_unlock();
 
 out:
@@ -1779,12 +1781,13 @@ static int rt_energy_aware_wake_cpu(struct task_struct *task)
 	int cpu_idle_idx = -1;
 	bool boost_on_big = rt_boost_on_big();
 	// curtis@ASTI, 2019/4/29, add for uxrealm CONFIG_OPCHAIN
+#ifdef CONFIG_OPCHAIN
 	bool best_cpu_is_claimed = false;
 
 	/* For surfaceflinger with util > 90, prefer to use big core */
 	if (task->compensate_need == 2 && tutil > 90)
 		boost_on_big = true;
-
+#endif
 	rcu_read_lock();
 
 	cpu = cpu_rq(smp_processor_id())->rd->min_cap_orig_cpu;
@@ -1816,13 +1819,14 @@ retry:
 		}
 
 		for_each_cpu_and(cpu, lowest_mask, sched_group_span(sg)) {
+#ifdef CONFIG_OPCHAIN
 			// add for chainboost CONFIG_ONEPLUS_CHAIN_BOOST
 			struct rq *rq = cpu_rq(cpu);
 			struct task_struct *tsk = rq->curr;
 
 			if (tsk->main_boost_switch || tsk->main_wake_boost)
 				continue;
-
+#endif
 			if (cpu_isolated(cpu))
 				continue;
 
@@ -1833,7 +1837,7 @@ retry:
 
 			if (__cpu_overutilized(cpu, util + tutil))
 				continue;
-
+#ifdef CONFIG_OPCHAIN
 			// curtis@ASTI, 2019/4/29, add for uxrealm CONFIG_OPCHAIN
 			if (best_cpu_is_claimed) {
 				best_cpu_idle_idx = cpu_idle_idx;
@@ -1843,7 +1847,7 @@ retry:
 				best_cpu_is_claimed = false;
 				continue;
 			}
-
+#endif
 			/* Find the least loaded CPU */
 			if (util > best_cpu_util)
 				continue;
@@ -1875,12 +1879,14 @@ retry:
 					continue;
 			}
 			// curtis@ASTI, 2019/4/29, add for uxrealm CONFIG_OPCHAIN
+#ifdef CONFIG_OPCHAIN
 			if (opc_get_claim_on_cpu(cpu)) {
 				if (best_cpu != -1)
 					continue;
 				else
 					best_cpu_is_claimed = true;
 			}
+#endif
 			best_cpu_idle_idx = cpu_idle_idx;
 			best_cpu_util_cum = util_cum;
 			best_cpu_util = util;
