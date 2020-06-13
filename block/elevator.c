@@ -224,8 +224,6 @@ int elevator_init(struct request_queue *q)
 							chosen_elevator);
 	}
 
-	if (!e)
-		e = elevator_get(q, CONFIG_DEFAULT_IOSCHED, false);
 	if (!e) {
 		printk(KERN_ERR
 			"Default I/O scheduler not found. Using noop.\n");
@@ -906,9 +904,7 @@ int elv_register(struct elevator_type *e)
 	spin_unlock(&elv_list_lock);
 
 	/* print pretty message */
-	if (elevator_match(e, chosen_elevator) ||
-			(!*chosen_elevator &&
-			 elevator_match(e, CONFIG_DEFAULT_IOSCHED)))
+	if (elevator_match(e, chosen_elevator))
 				def = " (default)";
 
 	printk(KERN_INFO "io scheduler %s registered%s\n", e->elevator_name,

@@ -43,13 +43,10 @@ config CFQ_GROUP_IOSCHED
 choice
 
 	prompt "Default I/O scheduler"
-	default DEFAULT_CFQ
+	default DEFAULT_ANXIETY
 	help
 	  Select the I/O scheduler which will be used by default for all
 	  block devices.
-
-	config DEFAULT_DEADLINE
-		bool "Deadline" if IOSCHED_DEADLINE=y
 
 	config DEFAULT_CFQ
 		bool "CFQ" if IOSCHED_CFQ=y
@@ -57,13 +54,38 @@ choice
 	config DEFAULT_NOOP
 		bool "No-op"
 
-endchoice
+	config DEFAULT_SIO
+		bool "SIO" if IOSCHED_SIO=y
 
-config DEFAULT_IOSCHED
-	string
-	default "deadline" if DEFAULT_DEADLINE
-	default "cfq" if DEFAULT_CFQ
-	default "noop" if DEFAULT_NOOP
+	config DEFAULT_FIOPS
+		bool "FIOPS" if IOSCHED_FIOPS=y
+
+	config DEFAULT_ZEN
+		bool "ZEN" if IOSCHED_ZEN=y
+
+	config DEFAULT_ANXIETY
+		bool "Anxiety" if IOSCHED_ANXIETY=y
+
+	config DEFAULT_BFQ_SQ
+		bool "BFQ-SQ" if IOSCHED_BFQ_SQ=y
+		help
+		  Selects BFQ-SQ as the default I/O scheduler which will be
+		  used by default for all block devices.
+		  The BFQ-SQ I/O scheduler aims at distributing the bandwidth
+		  as desired, independently of the disk parameters and with
+		  any workload. It also tries to guarantee low latency to
+		  interactive and soft real-time applications.
+
+	config DEFAULT_KYBER
+ 		bool "KYBER" if MQ_IOSCHED_KYBER=y
+		select SCSI
+		select SCSI_MQ_DEFAULT
+
+ 	config DEFAULT_DEADLINE
+ 		bool "Deadline" if IOSCHED_DEADLINE=y
+		select SCSI
+		select SCSI_MQ_DEFAULT
+endchoice
 
 config MQ_IOSCHED_DEADLINE
 	tristate "MQ deadline I/O scheduler"
