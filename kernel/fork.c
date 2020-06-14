@@ -92,6 +92,19 @@
 #include <linux/livepatch.h>
 #include <linux/thread_info.h>
 #include <linux/cpufreq_times.h>
+#ifdef CONFIG_CPU_INPUT_BOOST
+#include <linux/cpu_input_boost.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST
+#include <linux/devfreq_boost.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST_DDR
+#include <linux/devfreq_boost_ddr.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST_GPU
+#include <linux/devfreq_boost_gpu.h>
+#endif
+#include <linux/simple_lmk.h>
 
 #ifdef CONFIG_HOUSTON
 #include <oneplus/houston/houston_helper.h>
@@ -2267,6 +2280,25 @@ long _do_fork(unsigned long clone_flags,
 	struct task_struct *p;
 	int trace = 0;
 	long nr;
+
+#ifdef CONFIG_CPU_INPUT_BOOST
+	/* Boost CPU to the max for 50 ms when userspace launches an app */
+	if (current)  {
+		if (task_is_zygote(current) || task_is_embryo(current)) {
+			cpu_input_boost_kick_cluster1(750);
+			cpu_input_boost_kick_cluster2(750);
+#ifdef CONFIG_DEVFREQ_BOOST
+			devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 750);
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST_DDR
+			devfreq_boost_ddr_kick_max(DEVFREQ_MSM_DDRBW, 750);
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST_GPU
+			devfreq_boost_gpu_kick_max(DEVFREQ_MSM_GPUBW, 750);
+#endif
+		}
+	}
+#endif
 
 	/*
 	 * Determine whether and which event to report to ptracer.  When

@@ -10,6 +10,20 @@
 #include <linux/interrupt.h>
 
 #include "walt.h"
+
+#ifdef CONFIG_CPU_INPUT_BOOST
+#include <linux/cpu_input_boost.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST
+#include <linux/devfreq_boost.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST_DDR
+#include <linux/devfreq_boost_ddr.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST_GPU
+#include <linux/devfreq_boost_gpu.h>
+#endif
+
 #ifdef CONFIG_OPCHAIN
 // morison.yan@ASTI, 2019/4/29, add for uxrealm CONFIG_OPCHAIN
 #include <oneplus/uxcore/opchain_helper.h>
@@ -1780,6 +1794,19 @@ static int rt_energy_aware_wake_cpu(struct task_struct *task)
 	int best_cpu_idle_idx = INT_MAX;
 	int cpu_idle_idx = -1;
 	bool boost_on_big = rt_boost_on_big();
+
+	if (task->is_surfaceflinger && tutil > 85) {
+		if (task->cpu < 4)
+			cpu_input_boost_kick_cluster1(1000);
+		else if ((task->cpu > 3) && (task->cpu < 7))
+			cpu_input_boost_kick_cluster2(1000);
+		devfreq_boost_gpu_kick_max(DEVFREQ_MSM_GPUBW, 1000);
+		devfreq_boost_ddr_kick_max(DEVFREQ_MSM_DDRBW, 1000);
+		devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 1000);
+		
+			
+	}
+
 	// curtis@ASTI, 2019/4/29, add for uxrealm CONFIG_OPCHAIN
 #ifdef CONFIG_OPCHAIN
 	bool best_cpu_is_claimed = false;
