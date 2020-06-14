@@ -2236,4 +2236,6 @@ static inline void set_wake_up_idle(bool enabled)
 		current->flags &= ~PF_WAKE_UP_IDLE;
 }
 
+void set_stune_boost(char *st_name, int boost);
+
 #endif
