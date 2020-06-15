@@ -104,7 +104,6 @@
 #ifdef CONFIG_DEVFREQ_BOOST_GPU
 #include <linux/devfreq_boost_gpu.h>
 #endif
-#include <linux/simple_lmk.h>
 
 #ifdef CONFIG_HOUSTON
 #include <oneplus/houston/houston_helper.h>
