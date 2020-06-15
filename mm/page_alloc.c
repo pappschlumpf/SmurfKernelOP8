@@ -72,6 +72,15 @@
 #include <asm/sections.h>
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
+#ifdef CONFIG_CPU_INPUT_BOOST
+#include <linux/cpu_input_boost.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST
+#include <linux/devfreq_boost.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST_DDR
+#include <linux/devfreq_boost_ddr.h>
+#endif
 #include "internal.h"
 /* bin.zhong@ASTI add CONFIG_DEFRAG */
 #include <oneplus/defrag/defrag_helper.h>
@@ -4664,6 +4673,16 @@ retry:
 	 */
 	if (costly_order && !(gfp_mask & __GFP_RETRY_MAYFAIL))
 		goto nopage;
+#ifdef CONFIG_CPU_INPUT_BOOST	
+	cpu_input_boost_kick_cluster1(750);
+	cpu_input_boost_kick_cluster2(750);
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST
+			devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 750);
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST_DDR
+			devfreq_boost_ddr_kick_max(DEVFREQ_MSM_DDRBW, 750);
+#endif
 
 	if (should_reclaim_retry(gfp_mask, order, ac, alloc_flags,
 				 did_some_progress > 0, &no_progress_loops))

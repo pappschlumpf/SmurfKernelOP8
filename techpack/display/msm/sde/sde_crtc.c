@@ -67,6 +67,18 @@
 #include <drm/drm_mipi_dsi.h>
 #include <drm/drm_sysfs.h>
 #include <drm/drmP.h>
+#ifdef CONFIG_CPU_INPUT_BOOST
+#include <linux/cpu_input_boost.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST
+#include <linux/devfreq_boost.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST_DDR
+#include <linux/devfreq_boost_ddr.h>
+#endif
+#ifdef CONFIG_DEVFREQ_BOOST_GPU
+#include <linux/devfreq_boost_gpu.h>
+#endif
 #define to_drm_connector(d) dev_get_drvdata(d)
 #define to_dsi_bridge(x)  container_of((x), struct dsi_bridge, base)
 extern int msm_drm_notifier_call_chain(unsigned long val, void *v);
@@ -4956,6 +4968,15 @@ static int sde_crtc_onscreenfinger_atomic_check(struct sde_crtc_state *cstate,
 		display->panel->dim_status = true;
 	else
 		display->panel->dim_status = false;
+		
+	if (fp_mode == 1 || fppressed_index > 0) {
+		/*Kick for fp scan*/
+    		cpu_input_boost_kick_cluster1_wake(750);
+		cpu_input_boost_kick_cluster2_wake(750);
+		devfreq_boost_kick_wake(DEVFREQ_MSM_CPUBW, 750);
+		devfreq_boost_ddr_kick_wake(DEVFREQ_MSM_DDRBW, 750);
+		devfreq_boost_gpu_kick_wake(DEVFREQ_MSM_GPUBW, 750);
+	}
 
 	if(aod_index <0){
 		oneplus_aod_hid = 0;

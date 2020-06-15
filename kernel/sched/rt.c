@@ -1795,7 +1795,7 @@ static int rt_energy_aware_wake_cpu(struct task_struct *task)
 	int cpu_idle_idx = -1;
 	bool boost_on_big = rt_boost_on_big();
 
-	if (task->is_surfaceflinger && tutil > 85) {
+	/*if (task->is_surfaceflinger && tutil > 85) {
 		if (task->cpu < 4)
 			cpu_input_boost_kick_cluster1(1000);
 		else if ((task->cpu > 3) && (task->cpu < 7))
@@ -1805,7 +1805,7 @@ static int rt_energy_aware_wake_cpu(struct task_struct *task)
 		devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 1000);
 		
 			
-	}
+	}*/
 
 	// curtis@ASTI, 2019/4/29, add for uxrealm CONFIG_OPCHAIN
 #ifdef CONFIG_OPCHAIN
