@@ -11727,8 +11727,10 @@ static bool silver_has_big_tasks(void)
 	for_each_possible_cpu(cpu) {
 		if (!is_min_capacity_cpu(cpu))
 			break;
+#ifdef CONFIG_SCHED_WALT
 		if (cpu_rq(cpu)->walt_stats.nr_big_tasks)
 			return true;
+#endif
 	}
 
 	return false;
