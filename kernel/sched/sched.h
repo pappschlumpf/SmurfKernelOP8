@@ -2576,6 +2576,38 @@ static inline unsigned long schedutil_energy_util(int cpu, unsigned long util)
 }
 #endif
 
+#ifdef CONFIG_CPU_FREQ_GOV_SMURFUTIL
+/**
+ * enum schedutil_type - CPU utilization type
+ * @FREQUENCY_UTIL:	Utilization used to select frequency
+ * @ENERGY_UTIL_SMU:	Utilization used during energy calculation
+ *
+ * The utilization signals of all scheduling classes (CFS/RT/DL) and IRQ time
+ * need to be aggregated differently depending on the usage made of them. This
+ * enum is used within schedutil_freq_util() to differentiate the types of
+ * utilization expected by the callers, and adjust the aggregation accordingly.
+ */
+enum smurfutil_type {
+	FREQUENCY_UTIL_SMU,
+	ENERGY_UTIL_SMU,
+};
+
+unsigned long smurfutil__freq_util(int cpu, unsigned long util,
+			          unsigned long max, enum schedutil_type type);
+
+static inline unsigned long smurfutil__energy_util(int cpu, unsigned long util)
+{
+	unsigned long max = arch_scale_cpu_capacity(NULL, cpu);
+
+	return smurfutil__freq_util(cpu, util, max, ENERGY_UTIL_SMU);
+}
+#else /* CONFIG_CPU_FREQ_GOV_SMURFUTIL */
+static inline unsigned long smurfutil_energy_util(int cpu, unsigned long util)
+{
+	return util;
+}
+#endif
+
 #ifdef CONFIG_SMP
 static inline unsigned long cpu_bw_dl(struct rq *rq)
 {

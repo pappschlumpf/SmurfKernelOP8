@@ -64,7 +64,7 @@ static bool little_only __read_mostly = false;
 bool boost_gold __read_mostly = true;
 static bool gpu_oc __read_mostly = true;
 static bool ufs_boost __read_mostly = false;
-static bool smumode = false;
+static bool smumode = true;
 
 unsigned int base_stune_boost __read_mostly = 20;
 unsigned int default_level_stune_boost __read_mostly = 5;
