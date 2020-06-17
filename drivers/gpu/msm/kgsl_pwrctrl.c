@@ -1479,7 +1479,6 @@ static DEVICE_ATTR_RW(force_clk_on);
 static DEVICE_ATTR_RW(force_bus_on);
 static DEVICE_ATTR_RW(force_rail_on);
 static DEVICE_ATTR_RW(bus_split);
-static DEVICE_ATTR_RW(default_pwrlevel);
 static DEVICE_ATTR_RW(popp);
 static DEVICE_ATTR_RW(force_no_nap);
 static DEVICE_ATTR_RO(gpu_model);
@@ -1508,7 +1507,6 @@ static const struct attribute *pwrctrl_attr_list[] = {
 	&dev_attr_force_rail_on.attr,
 	&dev_attr_force_no_nap.attr,
 	&dev_attr_bus_split.attr,
-	&dev_attr_default_pwrlevel.attr,
 	&dev_attr_popp.attr,
 	&dev_attr_gpu_model.attr,
 	&dev_attr_gpu_busy_percentage.attr,
@@ -3351,7 +3349,7 @@ EXPORT_SYMBOL(kgsl_pwr_limits_get_freq);
 int kgsl_pwrctrl_set_default_gpu_pwrlevel(struct kgsl_device *device)
 {
 	struct kgsl_pwrctrl *pwr = &device->pwrctrl;
-	unsigned int new_level = pwr->default_pwrlevel;
+	unsigned int new_level = pwr->num_pwrlevels - 1;
 	unsigned int old_level = pwr->active_pwrlevel;
 
 	/*
