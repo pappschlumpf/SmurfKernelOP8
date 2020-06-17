@@ -76,7 +76,6 @@ struct gmu_iommu_context gmu_ctx[] = {
 static unsigned int next_uncached_kernel_alloc;
 static unsigned int next_uncached_user_alloc;
 
-static void gmu_snapshot(struct kgsl_device *device);
 static void gmu_remove(struct kgsl_device *device);
 
 unsigned int gmu_get_memtype_base(struct gmu_device *gmu,
@@ -557,7 +556,6 @@ static int gmu_dcvs_set(struct kgsl_device *device,
 		 * recovery.
 		 */
 		if (test_bit(ADRENO_DEVICE_STARTED, &adreno_dev->priv)) {
-			gmu_core_snapshot(device);
 			adreno_set_gpu_fault(adreno_dev, ADRENO_GMU_FAULT);
 			adreno_set_gpu_fault(adreno_dev,
 				ADRENO_GMU_FAULT_SKIP_SNAPSHOT);
@@ -1548,30 +1546,6 @@ static int gmu_suspend(struct kgsl_device *device)
 	return 0;
 }
 
-static void gmu_snapshot(struct kgsl_device *device)
-{
-	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
-	struct gmu_dev_ops *gmu_dev_ops = GMU_DEVICE_OPS(device);
-	struct gmu_device *gmu = KGSL_GMU_DEVICE(device);
-
-	/* Abstain from sending another nmi or over-writing snapshot */
-	if (test_and_set_bit(GMU_FAULT, &device->gmu_core.flags))
-		return;
-
-	adreno_gmu_send_nmi(adreno_dev);
-	/* Wait for the NMI to be handled */
-	udelay(100);
-	kgsl_device_snapshot(device, NULL, true);
-
-	adreno_write_gmureg(adreno_dev,
-			ADRENO_REG_GMU_GMU2HOST_INTR_CLR, 0xFFFFFFFF);
-	adreno_write_gmureg(adreno_dev,
-			ADRENO_REG_GMU_GMU2HOST_INTR_MASK,
-			~(gmu_dev_ops->gmu2host_intr_mask));
-
-	gmu->fault_count++;
-}
-
 static int gmu_init(struct kgsl_device *device)
 {
 	struct gmu_device *gmu = KGSL_GMU_DEVICE(device);
@@ -1685,7 +1659,6 @@ static int gmu_start(struct kgsl_device *device)
 error_gmu:
 	if (ADRENO_QUIRK(adreno_dev, ADRENO_QUIRK_HFI_USE_REG))
 		gmu_core_dev_oob_clear(device, oob_boot_slumber);
-	gmu_core_snapshot(device);
 	return ret;
 }
 
@@ -1731,7 +1704,6 @@ static void gmu_stop(struct kgsl_device *device)
 
 error:
 	dev_err(&gmu->pdev->dev, "Failed to stop GMU\n");
-	gmu_core_snapshot(device);
 	/*
 	 * We failed to stop the gmu successfully. Force a suspend
 	 * to set things up for a fresh start.
@@ -1815,7 +1787,6 @@ struct gmu_core_ops gmu_ops = {
 	.start = gmu_start,
 	.stop = gmu_stop,
 	.dcvs_set = gmu_dcvs_set,
-	.snapshot = gmu_snapshot,
 	.regulator_isenabled = gmu_regulator_isenabled,
 	.suspend = gmu_suspend,
 	.acd_set = gmu_acd_set,

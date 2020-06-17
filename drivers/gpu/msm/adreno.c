@@ -677,8 +677,6 @@ static irqreturn_t adreno_irq_handler(struct kgsl_device *device)
 		tmp &= ~BIT(i);
 	}
 
-	gpudev->irq_trace(adreno_dev, status);
-
 	/*
 	 * Clear ADRENO_INT_RBBM_AHB_ERROR bit after this interrupt has been
 	 * cleared in its respective handler
@@ -1489,9 +1487,6 @@ static int adreno_probe(struct platform_device *pdev)
 
 	kgsl_pwrscale_init(&pdev->dev, CONFIG_QCOM_ADRENO_DEFAULT_GOVERNOR);
 
-	/* Initialize coresight for the target */
-	adreno_coresight_init(adreno_dev);
-
 	/* Get the system cache slice descriptor for GPU */
 	adreno_dev->gpu_llc_slice = adreno_llc_getd(LLCC_GPU);
 	if (IS_ERR(adreno_dev->gpu_llc_slice) &&
@@ -1583,7 +1578,6 @@ static int adreno_remove(struct platform_device *pdev)
 #endif
 	adreno_sysfs_close(adreno_dev);
 
-	adreno_coresight_remove(adreno_dev);
 	adreno_profile_close(adreno_dev);
 
 	/* Release the system cache slice descriptor */
@@ -1936,13 +1930,6 @@ int adreno_set_unsecured_mode(struct adreno_device *adreno_dev,
 	if (!adreno_is_a5xx(adreno_dev) && !adreno_is_a6xx(adreno_dev))
 		return -EINVAL;
 
-	if (ADRENO_QUIRK(adreno_dev, ADRENO_QUIRK_CRITICAL_PACKETS) &&
-			adreno_is_a5xx(adreno_dev)) {
-		ret = a5xx_critical_packet_submit(adreno_dev, rb);
-		if (ret)
-			return ret;
-	}
-
 	/* GPU comes up in secured mode, make it unsecured by default */
 	if (adreno_dev->zap_loaded)
 		ret = adreno_switch_to_unsecure_mode(adreno_dev, rb);
@@ -2045,13 +2032,11 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 	/* Send OOB request to turn on the GX */
 	status = gmu_core_dev_oob_set(device, oob_gpu);
 	if (status) {
-		gmu_core_snapshot(device);
 		goto error_mmu_off;
 	}
 
 	status = gmu_core_dev_hfi_start_msg(device);
 	if (status) {
-		gmu_core_snapshot(device);
 		goto error_oob_clear;
 	}
 
@@ -2191,9 +2176,6 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 	 */
 	adreno_llc_setup(device);
 
-	/* Re-initialize the coresight registers if applicable */
-	adreno_coresight_start(adreno_dev);
-
 	adreno_irqctrl(adreno_dev, 1);
 
 	adreno_perfcounter_start(adreno_dev);
@@ -2204,14 +2186,6 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 	status = adreno_ringbuffer_start(adreno_dev);
 	if (status)
 		goto error_oob_clear;
-
-	/*
-	 * At this point it is safe to assume that we recovered. Setting
-	 * this field allows us to take a new snapshot for the next failure
-	 * if we are prioritizing the first unrecoverable snapshot.
-	 */
-	if (device->snapshot)
-		device->snapshot->recovered = true;
 
 	/* Start the dispatcher */
 	adreno_dispatcher_start(device);
@@ -2303,7 +2277,6 @@ static int adreno_stop(struct kgsl_device *device)
 	error = gmu_core_dev_oob_set(device, oob_gpu);
 	if (error) {
 		gmu_core_dev_oob_clear(device, oob_gpu);
-			gmu_core_snapshot(device);
 			error = -EINVAL;
 			goto no_gx_power;
 	}
@@ -2311,9 +2284,6 @@ static int adreno_stop(struct kgsl_device *device)
 	kgsl_pwrscale_update_stats(device);
 
 	adreno_irqctrl(adreno_dev, 0);
-
-	/* Save active coresight registers if applicable */
-	adreno_coresight_stop(adreno_dev);
 
 	/* Save physical performance counter values before GPU power down*/
 	adreno_perfcounter_save(adreno_dev);
@@ -2329,7 +2299,6 @@ static int adreno_stop(struct kgsl_device *device)
 	 */
 
 	if (!error && gmu_core_dev_wait_for_lowest_idle(device)) {
-		gmu_core_snapshot(device);
 		/*
 		 * Assume GMU hang after 10ms without responding.
 		 * It shall be relative safe to clear vbif and stop
@@ -2970,9 +2939,6 @@ int adreno_soft_reset(struct kgsl_device *device)
 	/* Reinitialize the GPU */
 	gpudev->start(adreno_dev);
 
-	/* Re-initialize the coresight registers if applicable */
-	adreno_coresight_start(adreno_dev);
-
 	/* Enable IRQ */
 	adreno_irqctrl(adreno_dev, 1);
 
@@ -3056,16 +3022,6 @@ void adreno_spin_idle_debug(struct adreno_device *adreno_dev,
 		adreno_dev->cur_rb->id, rptr, wptr, status, status3, intstatus);
 
 	dev_err(device->dev, " hwfault=%8.8X\n", hwfault);
-
-	/*
-	 * If CP is stuck, gmu may not perform as expected. So force a gmu
-	 * snapshot which captures entire state as well as sets the gmu fault
-	 * because things need to be reset anyway.
-	 */
-	if (gmu_core_isenabled(device))
-		gmu_core_snapshot(device);
-	else
-		kgsl_device_snapshot(device, NULL, false);
 }
 
 /**
@@ -3979,7 +3935,6 @@ static const struct kgsl_functable adreno_functable = {
 	.compat_ioctl = adreno_compat_ioctl,
 	.power_stats = adreno_power_stats,
 	.gpuid = adreno_gpuid,
-	.snapshot = adreno_snapshot,
 	.irq_handler = adreno_irq_handler,
 	.drain = adreno_drain,
 	.device_private_create = adreno_device_private_create,
