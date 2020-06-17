@@ -382,12 +382,16 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
 				  unsigned long util, unsigned long max)
 {
 	struct cpufreq_policy *policy = sg_policy->policy;
+	struct sugov_tunables *tunables = sg_policy->tunables;
 	unsigned int boost_freq;
 	unsigned long load = 100 * util / max;
 	unsigned int freq = arch_scale_freq_invariant() ?
 				policy->cpuinfo.max_freq : policy->cur;
 
 	freq = map_util_freq(util, freq, max);
+	
+	if ((load >= tunables->target_load2) && tunables->turbo_mode)
+			freq = policy->cpuinfo.max_freq;
 	
 	switch (policy->cpu) {
 		case 0: if (likely(gov_cpu_state != NULL)) {
@@ -1529,6 +1533,8 @@ static int sugov_init(struct cpufreq_policy *policy)
 		tunables->target_load1 = TARGET_LOAD_1_BIGC;
 		tunables->target_load2 = TARGET_LOAD_2_BIGC;
 	}
+	
+	tunables->turbo_mode = 1;
 
 	policy->governor_data = sg_policy;
 	sg_policy->tunables = tunables;
