@@ -414,10 +414,6 @@ static int _set_pagetable_gpu(struct adreno_ringbuffer *rb,
 	unsigned int count;
 	int result;
 
-	link = kmalloc(PAGE_SIZE, GFP_KERNEL);
-	if (link == NULL)
-		return -ENOMEM;
-
 	/* If we are in a fault the MMU will be reset soon */
 	if (test_bit(ADRENO_DEVICE_FAULT, &adreno_dev->priv))
 		return 0;
