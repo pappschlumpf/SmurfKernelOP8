@@ -2593,7 +2593,7 @@ enum smurfutil_type {
 };
 
 unsigned long smurfutil__freq_util(int cpu, unsigned long util,
-			          unsigned long max, enum schedutil_type type);
+			          unsigned long max, enum smurfutil_type type);
 
 static inline unsigned long smurfutil__energy_util(int cpu, unsigned long util)
 {
