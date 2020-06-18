@@ -50,7 +50,7 @@ static unsigned int max_boost_freq_gold_2 __read_mostly = CONFIG_MAX_BOOST_FREQ_
 static unsigned int remove_input_boost_freq_lp __read_mostly = CONFIG_REMOVE_INPUT_BOOST_FREQ_LP;
 static unsigned int remove_input_boost_freq_perf __read_mostly = CONFIG_REMOVE_INPUT_BOOST_FREQ_PERF;
 static unsigned int remove_input_boost_freq_gold __read_mostly = CONFIG_REMOVE_INPUT_BOOST_FREQ_GOLD;
-unsigned int sleep_freq_lp __read_mostly = 576000;
+unsigned int sleep_freq_lp __read_mostly = 300000;
 unsigned int sleep_freq_hp __read_mostly = 710400;
 unsigned int sleep_freq_gold __read_mostly = 825600;
 static unsigned int gpu_boost_freq __read_mostly = CONFIG_GPU_BOOST_FREQ;
@@ -296,14 +296,14 @@ static void set_gpu_boost(struct boost_drv *b, int freq)
 	if (likely(gpu_oc)) {
 		if (freq == 441)
 			level = 5;
-		if (freq == 416)
+		if (freq == 400)
 			level = 6;
 		if (freq == 305)
 			level = 7;
 		if (freq == 200)
 			level = 8;
 	} else {
-		if (freq == 416)
+		if (freq == 400)
 			level = 3;
 		if (freq == 305)
 			level = 4;
