@@ -20,13 +20,13 @@ export PATH=${CLANG_PATH}:${PATH}
 export DTC_EXT=dtc
 export CLANG_TRIPLE=aarch64-linux-gnu-
 export LD_LIBRARY_PATH=/media/${USER}/ExtremeExt4/Toolchains/clang/ProtonClang/lib:$LD_LIBRARY_PATH
-export SPL="2020-02"
+export SPL="2020-05"
 
 #export KBUILD_COMPILER_STRING=$(~/android/Toolchains/clang/clang-r328903/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
 DEFCONFIG="smurf_defconfig"
 
 # Kernel Details
-VER=".1.0.0.unified"
+VER=".SmurfKernelOP8Pro.1.0.0.unified"
 
 # Paths
 KERNEL_DIR=`pwd`
