@@ -26,7 +26,7 @@ export SPL="2020-05"
 DEFCONFIG="smurf_defconfig"
 
 # Kernel Details
-VER=".SmurfKernelOP8.1.0.0."
+VER="..1.0.0."
 
 # Paths
 KERNEL_DIR=`pwd`
