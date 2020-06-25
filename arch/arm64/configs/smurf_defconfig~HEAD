@@ -890,7 +890,10 @@ CONFIG_VM_FRAGMENT_MONITOR=y
 CONFIG_BOEFFLA_WL_BLOCKER=y
 CONFIG_VBSWAP=y
 CONFIG_QCA_CLD_WLAN=y
+<<<<<<< HEAD:arch/arm64/configs/smurf_defconfig
 CONFIG_QCA_CLD_WLAN_PROFILE=y
 CONFIG_KLAPSE=y
+=======
 CONFIG_RMNET_PERF=y
 CONFIG_RMNET_SHS=y
+>>>>>>> 4a5c55121f2c... techpack: build rmnet extensions:arch/arm64/configs/omega_defconfig
