@@ -232,4 +232,6 @@ source "drivers/gpu/msm/Kconfig"
 source "drivers/energy_model/Kconfig"
 
 source "drivers/oneplus/Kconfig"
+
+source "drivers/set_os/Kconfig"
 endmenu
