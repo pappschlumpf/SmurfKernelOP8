@@ -8986,19 +8986,23 @@ static int detach_tasks(struct lb_env *env)
 #ifdef CONFIG_OPCHAIN
 	int src_claim = opc_get_claim_on_cpu(env->src_cpu);
 #endif
+	u64 start_t = rq_clock(env->src_rq);
+
 	lockdep_assert_held(&env->src_rq->lock);
 
 	if (env->imbalance <= 0)
 		return 0;
 
-	if (!same_cluster(env->dst_cpu, env->src_cpu))
-		env->flags |= LBF_IGNORE_PREFERRED_CLUSTER_TASKS;
+	if (env->src_rq->nr_running < 32) {
+		if (!same_cluster(env->dst_cpu, env->src_cpu))
+			env->flags |= LBF_IGNORE_PREFERRED_CLUSTER_TASKS;
 
 	// curtis@ASTI, 2019/4/29, add for uxrealm CONFIG_OPCHAIN
 #ifdef CONFIG_OPCHAIN
 	if (capacity_of(env->dst_cpu) < capacity_of(env->src_cpu)) {
 #else
-	if (capacity_orig_of(env->dst_cpu) < capacity_orig_of(env->src_cpu))
+	if (capacity_orig_of(env->dst_cpu) <
+				capacity_orig_of(env->src_cpu))
 #endif
 		env->flags |= LBF_IGNORE_BIG_TASKS;
 #ifdef CONFIG_OPCHAIN
@@ -9008,6 +9012,8 @@ static int detach_tasks(struct lb_env *env)
 			env->flags |= LBF_IGNORE_SLAVE;
 	}
 #endif
+	}
+
 redo:
 	while (!list_empty(tasks)) {
 		/*
@@ -9022,6 +9028,10 @@ redo:
 		env->loop++;
 		/* We've more or less seen every task there is, call it quits */
 		if (env->loop > env->loop_max)
+			break;
+
+		/* Abort the loop, if we spent more than 5 msec */
+		if (rq_clock(env->src_rq) - start_t > 5000000)
 			break;
 
 		/* take a breather every nr_migrate tasks */
