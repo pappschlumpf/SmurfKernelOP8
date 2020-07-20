@@ -40,7 +40,6 @@ int iris_set_pending_panel_brightness(int32_t pending, int32_t delay, int32_t le
 {
 	struct iris_cfg *pcfg = &gcfg[gcfg_index];
 
-	DSI_INFO("IRIS_LOG set pending panel %d,%d,%d", pending, delay, level);
 	pcfg->panel_pending = pending;
 	pcfg->panel_delay = delay;
 	pcfg->panel_level = level;
@@ -75,7 +74,6 @@ int iris5_sync_panel_brightness(int32_t step, void *phys_enc)
 	pcfg = &gcfg[gcfg_index];
 
 	if (pcfg->panel_pending == step) {
-		DSI_INFO("IRIS_LOG sync pending panel %d %d,%d,%d", step, pcfg->panel_pending, pcfg->panel_delay, pcfg->panel_level);
 		SDE_ATRACE_BEGIN("sync_panel_brightness");
 		if (step <= 2) {
 			rc = c_conn->ops.set_backlight(&c_conn->base,
@@ -184,7 +182,6 @@ void iris5_init(struct dsi_display *display, struct dsi_panel *panel)
 {
 	struct iris_cfg *pcfg = &gcfg[gcfg_index];
 
-	DSI_INFO("IRIS_LOG %s:%d", __func__, __LINE__);
 	pcfg->display = display;
 	pcfg->panel = panel;
 	pcfg->valid = 1;	/* empty */

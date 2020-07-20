@@ -1266,5 +1266,5 @@ void iris_set_loglevel(int level)
 
 inline int iris_get_loglevel(void)
 {
-	return iris_log_level;
+	return 0;
 }
