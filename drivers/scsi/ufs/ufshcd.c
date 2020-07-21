@@ -686,7 +686,7 @@ static void ufshcd_cmd_log_init(struct ufs_hba *hba)
 	/* Allocate log entries */
 	if (!hba->cmd_log.entries) {
 		hba->cmd_log.entries = kcalloc(UFSHCD_MAX_CMD_LOGGING,
-			sizeof(struct ufshcd_cmd_log_entry), GFP_KERNEL);
+			sizeof(struct ufshcd_cmd_log_entry), GFP_KERNEL | GFP_DMA);
 		if (!hba->cmd_log.entries)
 			return;
 		dev_dbg(hba->dev, "%s: cmd_log.entries initialized\n",
@@ -4644,7 +4644,7 @@ int ufshcd_read_desc_param(struct ufs_hba *hba,
 
 	/* Check whether we need temp memory */
 	if (param_offset != 0 || param_size < buff_len) {
-		desc_buf = kmalloc(buff_len, GFP_KERNEL);
+		desc_buf = kmalloc(buff_len, GFP_KERNEL | GFP_DMA);
 		if (!desc_buf)
 			return -ENOMEM;
 	} else {
@@ -4862,7 +4862,7 @@ int ufshcd_read_string_desc(struct ufs_hba *hba, int desc_index,
 			goto out;
 		}
 
-		buff_ascii = kzalloc(ascii_len, GFP_KERNEL);
+		buff_ascii = kzalloc(ascii_len, GFP_KERNEL | GFP_DMA);
 		if (!buff_ascii) {
 			err = -ENOMEM;
 			goto out;
@@ -4939,7 +4939,7 @@ static int ufshcd_memory_alloc(struct ufs_hba *hba)
 	hba->ucdl_base_addr = dmam_alloc_coherent(hba->dev,
 						  ucdl_size,
 						  &hba->ucdl_dma_addr,
-						  GFP_KERNEL);
+						  GFP_KERNEL | GFP_DMA);
 
 	/*
 	 * UFSHCI requires UTP command descriptor to be 128 byte aligned.
@@ -4962,7 +4962,7 @@ static int ufshcd_memory_alloc(struct ufs_hba *hba)
 	hba->utrdl_base_addr = dmam_alloc_coherent(hba->dev,
 						   utrdl_size,
 						   &hba->utrdl_dma_addr,
-						   GFP_KERNEL);
+						   GFP_KERNEL | GFP_DMA);
 	if (!hba->utrdl_base_addr ||
 	    WARN_ON(hba->utrdl_dma_addr & (PAGE_SIZE - 1))) {
 		dev_err(hba->dev,
@@ -4978,7 +4978,7 @@ static int ufshcd_memory_alloc(struct ufs_hba *hba)
 	hba->utmrdl_base_addr = dmam_alloc_coherent(hba->dev,
 						    utmrdl_size,
 						    &hba->utmrdl_dma_addr,
-						    GFP_KERNEL);
+						    GFP_KERNEL | GFP_DMA);
 	if (!hba->utmrdl_base_addr ||
 	    WARN_ON(hba->utmrdl_dma_addr & (PAGE_SIZE - 1))) {
 		dev_err(hba->dev,
@@ -4989,7 +4989,7 @@ static int ufshcd_memory_alloc(struct ufs_hba *hba)
 	/* Allocate memory for local reference block */
 	hba->lrb = devm_kcalloc(hba->dev,
 				hba->nutrs, sizeof(struct ufshcd_lrb),
-				GFP_KERNEL);
+				GFP_KERNEL | GFP_DMA);
 	if (!hba->lrb) {
 		dev_err(hba->dev, "LRB Memory allocation failed\n");
 		goto out;
@@ -8570,7 +8570,7 @@ static void ufshcd_set_active_icc_lvl(struct ufs_hba *hba)
 	u32 icc_level;
 
 	if (buff_len) {
-		desc_buf = kmalloc(buff_len, GFP_KERNEL);
+		desc_buf = kmalloc(buff_len, GFP_KERNEL | GFP_DMA);
 		if (!desc_buf)
 			return;
 	}
@@ -8707,7 +8707,7 @@ static int ufs_get_device_desc(struct ufs_hba *hba,
 
 	buff_len = max_t(size_t, hba->desc_size.dev_desc,
 			 QUERY_DESC_MAX_SIZE + 1);
-	desc_buf = kmalloc(buff_len, GFP_KERNEL);
+	desc_buf = kmalloc(buff_len, GFP_KERNEL | GFP_DMA);
 	if (!desc_buf)
 		return -ENOMEM;
 
@@ -9138,7 +9138,7 @@ static int ufs_read_device_desc_data(struct ufs_hba *hba)
 	u8 *desc_buf = NULL;
 
 	if (hba->desc_size.dev_desc) {
-		desc_buf = kmalloc(hba->desc_size.dev_desc, GFP_KERNEL);
+		desc_buf = kmalloc(hba->desc_size.dev_desc, GFP_KERNEL | GFP_DMA);
 		if (!desc_buf) {
 			dev_err(hba->dev,
 				"%s: Failed to allocate desc_buf\n", __func__);
@@ -9487,7 +9487,7 @@ static int ufshcd_query_ioctl(struct ufs_hba *hba, u8 lun, void __user *buffer)
 	u8 index;
 	u8 *desc = NULL;
 
-	ioctl_data = kzalloc(sizeof(struct ufs_ioctl_query_data), GFP_KERNEL);
+	ioctl_data = kzalloc(sizeof(struct ufs_ioctl_query_data), GFP_KERNEL | GFP_DMA);
 	if (!ioctl_data) {
 		err = -ENOMEM;
 		goto out;
@@ -9537,7 +9537,7 @@ static int ufshcd_query_ioctl(struct ufs_hba *hba, u8 lun, void __user *buffer)
 		}
 		length = min_t(int, QUERY_DESC_MAX_SIZE,
 				ioctl_data->buf_size);
-		desc = kzalloc(length, GFP_KERNEL);
+		desc = kzalloc(length, GFP_KERNEL | GFP_DMA);
 		if (!desc) {
 			dev_err(hba->dev, "%s: Failed allocating %d bytes\n",
 					__func__, length);
@@ -10274,7 +10274,7 @@ ufshcd_send_request_sense(struct ufs_hba *hba, struct scsi_device *sdp)
 	char *buffer;
 	int ret;
 
-	buffer = kzalloc(UFSHCD_REQ_SENSE_SIZE, GFP_KERNEL);
+	buffer = kzalloc(UFSHCD_REQ_SENSE_SIZE, GFP_KERNEL | GFP_DMA);
 	if (!buffer) {
 		ret = -ENOMEM;
 		goto out;
