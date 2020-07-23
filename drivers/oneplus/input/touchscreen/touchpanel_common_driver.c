@@ -1247,7 +1247,7 @@ static ssize_t proc_game_switch_write(struct file *file, const char __user *buff
 		return count;
 	}
 	sscanf(buf, "%x", &value);
-	ts->noise_level = value;
+	ts->noise_level = 1;
 
 	if (!ts->is_suspended) {
 		mutex_lock(&ts->mutex);
@@ -4665,7 +4665,7 @@ int register_common_touch_device(struct touchpanel_data *pdata)
 	ts->fd_enable = 0;
 	ts->palm_enable = 1;
 	ts->touch_count = 0;
-	ts->glove_enable = 0;
+	ts->glove_enable = 1;
 	ts->view_area_touched = 0;
 	ts->tp_suspend_order = LCD_TP_SUSPEND;
 	ts->tp_resume_order = TP_LCD_RESUME;
