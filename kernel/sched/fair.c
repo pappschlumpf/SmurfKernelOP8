@@ -76,7 +76,7 @@ walt_dec_cfs_rq_stats(struct cfs_rq *cfs_rq, struct task_struct *p) {}
 
 // add for chainboost CONFIG_ONEPLUS_CHAIN_BOOST
 #ifdef CONFIG_OPCHAIN
-unsigned  int __read_mostly main_preempt_disable = 1;
+unsigned  int __read_mostly main_preempt_disable;
 module_param(main_preempt_disable, uint, 0664);
 #endif
 /*
