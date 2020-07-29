@@ -293,23 +293,14 @@ static void set_gpu_boost(struct boost_drv *b, int freq)
 	else 
 		gpu_prev_freq = freq;
 
-	if (likely(gpu_oc)) {
-		if (freq == 441)
-			level = 5;
-		if (freq == 400)
-			level = 6;
-		if (freq == 305)
-			level = 7;
-		if (freq == 200)
-			level = 8;
-	} else {
-		if (freq == 400)
-			level = 3;
-		if (freq == 305)
-			level = 4;
-		if (freq == 200)
-			level = 5;
-	}
+	if (freq == 441)
+		level = 5;
+	if (freq == 400)
+		level = 6;
+	if (freq == 305)
+		level = 7;
+	if (freq == 200)
+		level = 8;
 
 	mutex_lock(&b->gpu_device->mutex);
 	b->gpu_pwr->min_pwrlevel = level;
