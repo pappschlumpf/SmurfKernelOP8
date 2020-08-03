@@ -41,7 +41,7 @@ function clean_all {
 		#ccache -C
 		cd $KERNEL_DIR
 		echo
-		make clean && make mrproper
+		make ARCH=arm64 SUBARCH=arm64 clean && make ARCH=arm64 SUBARCH=arm64 mrproper
 		rm -rf $MODULES_DIR/*
 		rm -rf ../SmurfKernelOP8/out/*
 		#git reset --hard > /dev/null 2>&1
