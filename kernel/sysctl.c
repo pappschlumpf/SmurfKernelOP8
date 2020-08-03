@@ -330,7 +330,6 @@ static struct ctl_table sysctl_base_table[] = {
 	{ }
 };
 
-#ifdef CONFIG_SCHED_DEBUG
 static int min_sched_granularity_ns = 100000;		/* 100 usecs */
 static int max_sched_granularity_ns = NSEC_PER_SEC;	/* 1 second */
 static int min_wakeup_granularity_ns;			/* 0 usecs */
@@ -339,7 +338,6 @@ static int max_wakeup_granularity_ns = NSEC_PER_SEC;	/* 1 second */
 static int min_sched_tunable_scaling = SCHED_TUNABLESCALING_NONE;
 static int max_sched_tunable_scaling = SCHED_TUNABLESCALING_END-1;
 #endif /* CONFIG_SMP */
-#endif /* CONFIG_SCHED_DEBUG */
 
 #ifdef CONFIG_COMPACTION
 static int min_extfrag_threshold;
@@ -407,6 +405,7 @@ static struct ctl_table kern_table[] = {
 		.mode           = 0644,
 		.proc_handler   = proc_dointvec,
 	},
+#ifdef CONFIG_SCHED_DEBUG
 	{
 		.procname	= "sched_group_upmigrate",
 		.data		= &sysctl_sched_group_upmigrate_pct,
@@ -424,6 +423,7 @@ static struct ctl_table kern_table[] = {
 		.extra1		= &zero,
 		.extra2		= &sysctl_sched_group_upmigrate_pct,
 	},
+#endif
 	{
 		.procname	= "sched_boost",
 		.data		= &sysctl_sched_boost,
@@ -604,7 +604,6 @@ static struct ctl_table kern_table[] = {
 		.extra2		= &two,
 	},
 #endif
-#ifdef CONFIG_SCHED_DEBUG
 	{
 		.procname       = "sched_cstate_aware",
 		.data           = &sysctl_sched_cstate_aware,
@@ -670,6 +669,7 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+#ifdef CONFIG_SCHED_DEBUG
 #ifdef CONFIG_SCHEDSTATS
 	{
 		.procname	= "sched_schedstats",

@@ -171,7 +171,7 @@ struct ai_parcel {
 	u32 cpu_orig_max_freq_1;
 	u32 gpu_freq;
 	u64 ddr_freq;
-	u32 ddr_voting;
+	u32 ddr_bw;
 	u32 volt_now; // battery part
 	u32 curr_now;
 	u64 queued_ts_us;
@@ -181,7 +181,6 @@ struct ai_parcel {
 	u64 notify_start_ts_us;
 	u64 notify_end_ts_us;
 	u64 utils[8];
-	u32 skin_temp;
 #ifdef CONFIG_CONTROL_CENTER
 	struct cc_boost_ts cbt[CC_BOOST_TS_SIZE];
 #endif

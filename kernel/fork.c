@@ -106,14 +106,6 @@
 #endif
 #include <linux/scs.h>
 
-#ifdef CONFIG_HOUSTON
-#include <oneplus/houston/houston_helper.h>
-#endif
-
-#ifdef CONFIG_CONTROL_CENTER
-#include <oneplus/control_center/control_center_helper.h>
-#endif
-
 #include <asm/pgtable.h>
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
@@ -2172,18 +2164,6 @@ static __latent_entropy struct task_struct *copy_process(
 
 	trace_task_newtask(p, clone_flags);
 	uprobe_copy_process(p, clone_flags);
-
-#ifdef CONFIG_HOUSTON
-	if (likely(!IS_ERR(p))) {
-		ht_perf_event_init(p);
-		ht_rtg_init(p);
-
-#ifdef CONFIG_CONTROL_CENTER
-		cc_tsk_init((void *) p);
-#endif
-
-	}
-#endif
 
 	return p;
 

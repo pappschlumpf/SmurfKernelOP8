@@ -72,10 +72,6 @@
 #include <oneplus/control_center/control_center_helper.h>
 #endif
 
-#ifdef CONFIG_HOUSTON
-#include <oneplus/houston/houston_helper.h>
-#endif
-
 #include <linux/oem/im.h>
 
 static void __unhash_process(struct task_struct *p, bool group_dead)
@@ -196,9 +192,6 @@ void release_task(struct task_struct *p)
 {
 	struct task_struct *leader;
 	int zap_leader;
-#ifdef CONFIG_HOUSTON
-	ht_rtg_list_del(p);
-#endif
 #ifdef CONFIG_IM
 	im_list_del_task(p);
 #endif
@@ -893,14 +886,6 @@ void __noreturn do_exit(long code)
 	exit_task_namespaces(tsk);
 	exit_task_work(tsk);
 	exit_thread(tsk);
-
-#ifdef CONFIG_CONTROL_CENTER
-	cc_tsk_free((void *) tsk);
-#endif
-
-#ifdef CONFIG_HOUSTON
-	ht_perf_event_release(tsk);
-#endif
 
 	/*
 	 * Flush inherited counters to the parent - before the parent

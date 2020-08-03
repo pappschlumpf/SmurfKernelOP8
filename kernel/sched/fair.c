@@ -33,10 +33,6 @@
 #include <linux/oem/oneplus_healthinfo.h>
 #endif
 
-#ifdef CONFIG_HOUSTON
-#include <oneplus/houston/houston_helper.h>
-#endif
-
 #include <linux/oem/im.h>
 #include <linux/oem/control_center.h>
 
@@ -92,8 +88,8 @@ module_param(main_preempt_disable, uint, 0664);
  *
  * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
  */
-unsigned int sysctl_sched_latency			= 2500000ULL;
-unsigned int normalized_sysctl_sched_latency		= 2500000ULL;
+unsigned int sysctl_sched_latency			= 6000000ULL;
+unsigned int normalized_sysctl_sched_latency		= 6000000ULL;
 
 /*
  * Enable/disable honoring sync flag in energy-aware wakeups.
@@ -150,11 +146,64 @@ unsigned int sysctl_sched_child_runs_first __read_mostly;
  *
  * (default: 1 msec * (1 + ilog(ncpus)), units: nanoseconds)
  */
-unsigned int sysctl_sched_wakeup_granularity		= 5000000UL;
-unsigned int normalized_sysctl_sched_wakeup_granularity	= 5000000UL;
+unsigned int sysctl_sched_wakeup_granularity		= 1000000UL;
+unsigned int normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
 
-const_debug unsigned int sysctl_sched_migration_cost	= 1000000UL;
+unsigned int __read_mostly sysctl_sched_migration_cost		= 500000UL;
 DEFINE_PER_CPU_READ_MOSTLY(int, sched_load_boost);
+
+static int __init set__sched_values1(char *cmdline)
+{
+	sysctl_sched_latency				= 5000000ULL;
+	normalized_sysctl_sched_latency		= 5000000ULL;
+	sysctl_sched_wakeup_granularity		= 1000000UL;
+	normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
+	sysctl_sched_migration_cost			= 500000UL;
+	sysctl_sched_min_granularity			= 750000ULL;
+	normalized_sysctl_sched_min_granularity	= 750000ULL;
+	return 0;
+}
+__setup("is_set1", set__sched_values1);
+
+static int __init set__sched_values2(char *cmdline)
+{
+	sysctl_sched_latency				= 3000000ULL;
+	normalized_sysctl_sched_latency		= 3000000ULL;
+	sysctl_sched_wakeup_granularity		= 1000000UL;
+	normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
+	sysctl_sched_migration_cost			= 500000UL;
+	sysctl_sched_min_granularity			= 750000ULL;
+	normalized_sysctl_sched_min_granularity	= 750000ULL;
+	return 0;
+}
+__setup("is_set2", set__sched_values2);
+
+static int __init set__sched_values3(char *cmdline)
+{
+	sysctl_sched_latency				= 10000000ULL;
+	normalized_sysctl_sched_latency		= 10000000ULL;
+	sysctl_sched_wakeup_granularity		= 5000000UL;
+	normalized_sysctl_sched_wakeup_granularity	= 5000000UL;
+	sysctl_sched_migration_cost			= 1000000UL;
+	sysctl_sched_min_granularity			= 1000000ULL;
+	normalized_sysctl_sched_min_granularity	= 1000000ULL;
+	return 0;
+}
+__setup("is_set3", set__sched_values3);
+
+static int __init set__sched_values_stock(char *cmdline)
+{
+	sysctl_sched_latency				= 6000000ULL;
+	normalized_sysctl_sched_latency		= 6000000ULL;
+	sysctl_sched_wakeup_granularity		= 1000000UL;
+	normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
+	sysctl_sched_migration_cost			= 500000UL;
+	sysctl_sched_min_granularity			= 750000ULL;
+	normalized_sysctl_sched_min_granularity	= 750000ULL;
+	return 0;
+}
+__setup("is_setstock", set__sched_values_stock);
+
 
 #ifdef CONFIG_SMP
 /*
@@ -652,17 +701,6 @@ static struct sched_entity *__pick_next_entity(struct sched_entity *se)
 	return rb_entry(next, struct sched_entity, run_node);
 }
 
-#ifdef CONFIG_SCHED_DEBUG
-struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq)
-{
-	struct rb_node *last = rb_last(&cfs_rq->tasks_timeline.rb_root);
-
-	if (!last)
-		return NULL;
-
-	return rb_entry(last, struct sched_entity, run_node);
-}
-
 /**************************************************************
  * Scheduling class statistics methods:
  */
@@ -689,7 +727,18 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
 
 	return 0;
 }
-#endif
+
+#ifdef CONFIG_SCHED_DEBUG
+struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq)
+{
+	struct rb_node *last = rb_last(&cfs_rq->tasks_timeline.rb_root);
+
+	if (!last)
+		return NULL;
+
+	return rb_entry(last, struct sched_entity, run_node);
+}
+#endif //CONFIG_SCHED_DEBUG
 
 /*
  * delta /= w
@@ -6924,15 +6973,6 @@ static int get_start_cpu(struct task_struct *p)
 			task_boost == TASK_BOOST_ON_MID;
 	bool task_skip_min = task_skip_min_cpu(p);
 	// curtis@ASTI, 2019/4/29, add for uxrealm CONFIG_OPCHAIN
-#ifdef CONFIG_OPCHAIN
-	bool is_uxtop = is_opc_task(p, UT_FORE);
-#endif
-#ifdef CONFIG_HOUSTON
-	if (is_uxtop && current->ravg.demand_scaled >= p->ravg.demand_scaled) {
-		/* add 'current' into RTG list */
-		ht_rtg_list_add_tail(current);
-	}
-#endif
 
 	/*
 	 * note about min/mid/max_cap_orig_cpu - either all of them will be -ve
