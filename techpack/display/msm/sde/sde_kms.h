@@ -58,7 +58,7 @@
  */
 #define SDE_INFO(fmt, ...)                                                \
 	do {                                                               \
-		no_printk(fmt, ##__VA_ARGS__); 
+		no_printk(fmt, ##__VA_ARGS__);                             \
 	} while (0)
 
 /**
