@@ -39,7 +39,6 @@ void sendnlmsg(char *msg)
 	NETLINK_CB(skb_1).dst_group = 0;
 
 	memcpy(NLMSG_DATA(nlh), msg, sizeof(char));
-	pr_debug("send message: %d\n", *(char *)NLMSG_DATA(nlh));
 
 	ret = netlink_unicast(gf_nl_sk, skb_1, pid, MSG_DONTWAIT);
 	if (!ret) {
@@ -123,7 +122,5 @@ void netlink_exit(void)
 		netlink_kernel_release(gf_nl_sk);
 		gf_nl_sk = NULL;
 	}
-
-	pr_info("self module exited\n");
 }
 

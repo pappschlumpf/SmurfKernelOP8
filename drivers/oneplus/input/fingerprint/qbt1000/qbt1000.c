@@ -9,7 +9,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#define DEBUG
+#undef DEBUG
 #define pr_fmt(fmt) "qbt1000:%s: " fmt, __func__
 
 #include <linux/delay.h>
@@ -187,8 +187,6 @@ int qbt1000_int2_callback(int event)
 		return -1;
 	}
 
-	pr_info("%s: event %d", __func__, event);
-
 	if (event == 1) {
 		//gpio_set_value(qbt1000_int2, 1);
 		gpio_report_event(ts_cb_drvdata,1);
@@ -328,18 +326,12 @@ static void gpio_report_event(struct qbt1000_drvdata *drvdata, int state)
 {
 	struct fw_event_desc fw_event;
 
-	pr_debug("gpio %d: last state %d, new state %d\n",
-			drvdata->fd_gpio.gpio,
-			drvdata->fd_gpio.last_gpio_state,
-			state);
-
 	//if (state == drvdata->fd_gpio.last_gpio_state)
 	//	return;
 
 	drvdata->fd_gpio.last_gpio_state = state;
 
 	if (drvdata->fd_ind_mode == FD_IND_MODE_GESTURES) {
-		pr_debug("tap detected\n");
 		/*
 		 * If a gesture IPC was sent but not yet decrypted and
 		 * dealt with mark it as stale and don't report it
@@ -411,13 +403,6 @@ static bool qbt1000_touch_get_state(struct qbt1000_drvdata *drvdata)
 		    m->touches[i].y >= drvdata->sensor_pos.top    &&
 		    m->touches[i].y <= drvdata->sensor_pos.bottom)
 			state = 1;
-
-		if (m->touches[i].x >= 0 || m->touches[i].y >= 0)
-			pr_debug("slot: %d, x: %d, y: %d, state: %d",
-					i,
-					m->touches[i].x,
-					m->touches[i].y,
-					state);
 	}
 
 end:
@@ -485,11 +470,6 @@ static int qbt1000_touch_connect(struct input_handler *handler,
 	if (error)
 		goto err_unregister_handle;
 
-	pr_info("Connected device: %s (%s at %s)\n",
-	       dev_name(&dev->dev),
-	       dev->name ?: "unknown",
-	       dev->phys ?: "unknown");
-
 	return 0;
 
  err_unregister_handle:
@@ -501,9 +481,6 @@ static int qbt1000_touch_connect(struct input_handler *handler,
 
 static void qbt1000_touch_disconnect(struct input_handle *handle)
 {
-	pr_info("Disconnected device: %s\n",
-		dev_name(&handle->dev->dev));
-
 	input_close_device(handle);
 	input_unregister_handle(handle);
 	kfree(handle);
@@ -544,14 +521,12 @@ static int qbt1000_open(struct inode *inode, struct file *file)
 						   qbt1000_cdev);
 	file->private_data = drvdata;
 
-	pr_debug("%s begin\n", __func__);
 	/* disallowing concurrent opens */
 	if (!atomic_dec_and_test(&drvdata->available)) {
 		atomic_inc(&drvdata->available);
 		rc = -EBUSY;
 	}
 
-	pr_debug("%s end : %d\n", __func__, rc);
 	return rc;
 }
 
@@ -608,8 +583,6 @@ static long qbt1000_ioctl(
 
 	mutex_lock(&drvdata->mutex);
 
-	pr_debug("%s %d\n", __func__, cmd);
-
 	switch (cmd) {
 	case QBT1000_LOAD_APP:
 	{
@@ -649,7 +622,6 @@ static long qbt1000_ioctl(
 			}
 		}
 
-		pr_debug("app %s load before\n", app.name);
 		app.name[MAX_NAME_SIZE - 1] = '\0';
 
 		/* start the TZ app */
@@ -682,8 +654,6 @@ static long qbt1000_ioctl(
 			rc = -ENOMEM;
 			goto end;
 		}
-
-		pr_debug("app %s load after\n", app.name);
 
 		drvdata->fp_app_handle = drvdata->app_handle;
 		break;
@@ -863,13 +833,6 @@ static long qbt1000_ioctl(
 		}
 
 		if (sensor_pos.enable && !drvdata->sensor_pos.enable) {
-			pr_debug("enable: %d, top: %d, bottom: %d, left %d, right: %d)",
-					sensor_pos.enable,
-					sensor_pos.top,
-					sensor_pos.bottom,
-					sensor_pos.left,
-					sensor_pos.right);
-
 			if (!drvdata->mt.is_registered) {
 				qbt1000_touch_handler.private = drvdata;
 				rc = input_register_handler(
@@ -884,13 +847,6 @@ static long qbt1000_ioctl(
 			drvdata->sensor_pos.right = sensor_pos.right;
 			drvdata->sensor_pos.enable = sensor_pos.enable;
 		} else if (!sensor_pos.enable && drvdata->sensor_pos.enable) {
-			pr_debug("disable: %d, top: %d, bottom: %d, left %d, right: %d)",
-					sensor_pos.enable,
-					sensor_pos.top,
-					sensor_pos.bottom,
-					sensor_pos.left,
-					sensor_pos.right);
-
 			drvdata->sensor_pos.enable = sensor_pos.enable;
 			drvdata->sensor_pos.top = 0;
 			drvdata->sensor_pos.bottom = 0;
@@ -939,8 +895,6 @@ static ssize_t qbt1000_read(struct file *filp, char __user *ubuf,
 		if (filp->f_flags & O_NONBLOCK)
 			return -EAGAIN;
 
-		pr_debug("fw_events fifo: empty, waiting\n");
-
 		if (wait_event_interruptible(drvdata->read_wait_queue,
 			  (get_events_fifo_len_locked(drvdata) > 0)))
 			return -ERESTARTSYS;
@@ -950,14 +904,12 @@ static ssize_t qbt1000_read(struct file *filp, char __user *ubuf,
 
 	if (!kfifo_get(&drvdata->fw_events, &fw_event)) {
 		spin_unlock_irqrestore(&drvdata->fw_events_lock, flags);
-
-		pr_debug("fw_events fifo: unexpectedly empty\n");
+		
 		return -EINVAL;
 	}
 
 	spin_unlock_irqrestore(&drvdata->fw_events_lock, flags);
 
-	pr_debug("fw_event: %d\n", (int)fw_event.ev);
 	return copy_to_user(ubuf, &fw_event.ev, sizeof(fw_event.ev));
 }
 
@@ -1184,8 +1136,6 @@ static irqreturn_t qbt1000_ipc_irq_handler(int irq, void *dev_id)
 		goto end;
 	}
 
-	pr_debug("firmware interrupt received (irq %d)\n", irq);
-
 	if (!drvdata->fp_app_handle)
 		goto end;
 
@@ -1253,7 +1203,6 @@ static irqreturn_t qbt1000_ipc_irq_handler(int irq, void *dev_id)
 		}
 
 		if (key_event_code != 0) {
-			pr_debug("geseture detected %d\n", key_event_code);
 			/*
 			 * Send gesture event if no tap arrived
 			 * since the IPC was sent
@@ -1281,8 +1230,6 @@ static irqreturn_t qbt1000_ipc_irq_handler(int irq, void *dev_id)
 						g_msg_to_event[i].fw_event;
 					struct fw_event_desc fw_ev_desc;
 
-					pr_debug("fw events: add %d\n",
-						(int) ev);
 					fw_ev_desc.ev = ev;
 
 					spin_lock_irqsave(
@@ -1361,8 +1308,6 @@ static int setup_ipc_irq(struct platform_device *pdev,
 	const char *desc = "qbt_ipc";
 
 	drvdata->fw_ipc.irq = gpio_to_irq(drvdata->fw_ipc.gpio);
-	pr_debug("\nirq %d gpio %d\n",
-			drvdata->fw_ipc.irq, drvdata->fw_ipc.gpio);
 
 	if (drvdata->fw_ipc.irq < 0) {
 		rc = drvdata->fw_ipc.irq;
@@ -1417,7 +1362,6 @@ static int qbt1000_read_device_tree(struct platform_device *pdev,
 	/* read clock frequency */
 	if (of_property_read_u32(pdev->dev.of_node,
 		"clock-frequency", &rate) == 0) {
-		pr_debug("clk frequency %d\n", rate);
 		drvdata->frequency = rate;
 	}
 
@@ -1455,7 +1399,6 @@ static int qbt1000_read_device_tree(struct platform_device *pdev,
 		pr_err("qfp-int2 gpio not found, error=%d\n", rc);
 		goto end;
 	}
-	pr_debug("get qfp-int2 success\n");
 
 end:
 	return rc;
@@ -1474,10 +1417,8 @@ static int qbt1000_probe(struct platform_device *pdev)
 	int rc = 0;
 	const char *desc = "qbt1000_int2";
 
-	pr_info("%s:fp version %x\n", __func__, fp_version);
 	if ((fp_version != 0x06))
 		return -ENODEV;
-	pr_debug("%s begin\n", __func__);
 	drvdata = devm_kzalloc(dev, sizeof(*drvdata), GFP_KERNEL);
 	if (!drvdata)
 		return -ENOMEM;
@@ -1527,7 +1468,6 @@ static int qbt1000_probe(struct platform_device *pdev)
 	ts_cb_drvdata = drvdata;
 
 end:
-	pr_debug("%s : %d\n", __func__, rc);
 	return rc;
 }
 

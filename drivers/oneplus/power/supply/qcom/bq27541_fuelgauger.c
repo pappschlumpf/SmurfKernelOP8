@@ -766,8 +766,8 @@ out:
 		/* store when soc changed */
 		power_supply_changed(di->batt_psy);
 		//pr_info("soc:%d, soc_calib:%d, VOLT:%d, current:%d\n",
-		soc, soc_calib, bq27541_battery_voltage(di) / 1000,
-		bq27541_average_current(di) / 1000);
+		//soc, soc_calib, bq27541_battery_voltage(di) / 1000,
+		//bq27541_average_current(di) / 1000);
 	}
 
 	return soc_calib;
@@ -1034,7 +1034,7 @@ static int bq27541_get_battery_temperature(void)
 			return SHUTDOWN_TBAT - 1;
 		else {
 			//pr_info("Tbat =%d T_tol=%d\n",
-				ret, (int)(current_time - pre_time));
+				//ret, (int)(current_time - pre_time));
 		}
 	}
 	bq27541_di->t_count = 0;
@@ -1385,7 +1385,7 @@ static void bq27541_hw_config(struct work_struct *work)
 
 	bq27541_registered = true;
 	//pr_info("DEVICE_TYPE is 0x%02X, FIRMWARE_VERSION is 0x%02X\n",
-			type, fw_ver);
+			//type, fw_ver);
 	//pr_info("Complete bq27541 configuration 0x%02X\n", flags);
 	schedule_delayed_work(
 		&di->modify_soc_smooth_parameter,
@@ -1633,7 +1633,7 @@ re_unseal:
 
 out:
 	//pr_info("bq27541 : i=%d,bq27541_di->device_type=%d\n",
-		i, bq27541_di->device_type);
+		//i, bq27541_di->device_type);
 
 	if (i == SEAL_POLLING_RETRY_LIMIT) {
 		pr_err("bq27541 failed\n");
