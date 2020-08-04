@@ -529,7 +529,7 @@ static int fg_soc_calibrate(struct  bq27541_device_info *di, int soc)
 		if (di->batt_psy) {
 			first_enter = true;
 			soc_load = load_soc();
-			pr_info("soc=%d, soc_load=%d\n", soc, soc_load);
+			//pr_info("soc=%d, soc_load=%d\n", soc, soc_load);
 			if (soc_load < 0) {
 				/* get last soc error */
 				di->soc_pre = soc;
@@ -765,7 +765,7 @@ out:
 		get_current_time(&di->soc_pre_time);
 		/* store when soc changed */
 		power_supply_changed(di->batt_psy);
-		pr_info("soc:%d, soc_calib:%d, VOLT:%d, current:%d\n",
+		//pr_info("soc:%d, soc_calib:%d, VOLT:%d, current:%d\n",
 		soc, soc_calib, bq27541_battery_voltage(di) / 1000,
 		bq27541_average_current(di) / 1000);
 	}
@@ -1033,7 +1033,7 @@ static int bq27541_get_battery_temperature(void)
 		if (time_last < 8)
 			return SHUTDOWN_TBAT - 1;
 		else {
-			pr_info("Tbat =%d T_tol=%d\n",
+			//pr_info("Tbat =%d T_tol=%d\n",
 				ret, (int)(current_time - pre_time));
 		}
 	}
@@ -1374,19 +1374,19 @@ static void bq27541_hw_config(struct work_struct *work)
 	/* david.liu@bsp, 20161004 Add BQ27411 support */
 	if (type == DEVICE_TYPE_BQ27411) {
 		di->device_type = DEVICE_BQ27411;
-		pr_info("DEVICE_BQ27411\n");
+		//pr_info("DEVICE_BQ27411\n");
 	} else {
 		di->device_type = DEVICE_BQ27541;
-		pr_info("DEVICE_BQ27541\n");
+		//pr_info("DEVICE_BQ27541\n");
 	}
 	gauge_set_cmd_addr(di->device_type);
 	di->allow_reading = true;
 #endif
 
 	bq27541_registered = true;
-	pr_info("DEVICE_TYPE is 0x%02X, FIRMWARE_VERSION is 0x%02X\n",
+	//pr_info("DEVICE_TYPE is 0x%02X, FIRMWARE_VERSION is 0x%02X\n",
 			type, fw_ver);
-	pr_info("Complete bq27541 configuration 0x%02X\n", flags);
+	//pr_info("Complete bq27541 configuration 0x%02X\n", flags);
 	schedule_delayed_work(
 		&di->modify_soc_smooth_parameter,
 		msecs_to_jiffies(SET_BQ_PARAM_DELAY_MS * 10));
@@ -1556,12 +1556,12 @@ static void bq27541_parse_dt(struct bq27541_device_info *di)
 
 	di->modify_soc_smooth = of_property_read_bool(node,
 				"qcom,modify-soc-smooth");
-	pr_info("di->modify_soc_smooth=%d\n", di->modify_soc_smooth);
+	//pr_info("di->modify_soc_smooth=%d\n", di->modify_soc_smooth);
 	di->bat_4p45v = of_property_read_bool(node,
 				"op,bat-4p45v");
 	di->check_match = of_property_read_bool(node,
 				"op,check-match");
-	pr_info("BQ 4p45V=%d, check-match=%d\n", di->bat_4p45v, di->check_match);
+	//pr_info("BQ 4p45V=%d, check-match=%d\n", di->bat_4p45v, di->check_match);
 }
 static int sealed(void)
 {
@@ -1632,7 +1632,7 @@ re_unseal:
 	}
 
 out:
-	pr_info("bq27541 : i=%d,bq27541_di->device_type=%d\n",
+	//pr_info("bq27541 : i=%d,bq27541_di->device_type=%d\n",
 		i, bq27541_di->device_type);
 
 	if (i == SEAL_POLLING_RETRY_LIMIT) {
@@ -1911,7 +1911,7 @@ static void bq27411_modify_soc_smooth_parameter(
 		return;
 	}
 
-	pr_info("%s begin\n", __func__);
+	//pr_info("%s begin\n", __func__);
 	if (sealed()) {
 		if (!unseal(BQ27411_UNSEAL_KEY))
 			return;
@@ -1937,7 +1937,7 @@ write_parameter:
 		seal();
 	}
 	di->already_modify_smooth = true;
-	pr_info("%s end\n", __func__);
+	//pr_info("%s end\n", __func__);
 }
 
 static int bq27541_battery_probe(struct i2c_client *client,
@@ -2036,10 +2036,10 @@ static int bq27541_battery_probe(struct i2c_client *client,
 	retval = check_bat_present(di);
 	if( retval ) {
 		init_battery_exist_node();
-		pr_info("probe success battery exist \n");
+		//pr_info("probe success battery exist \n");
 	}
 	else {
-		pr_info("probe success battery not exist \n");
+		//pr_info("probe success battery not exist \n");
 	}
 	return 0;
 
