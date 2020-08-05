@@ -61,7 +61,7 @@ struct sde_rotator_debug_base {
 	struct sde_rot_mgr *mgr;
 	struct mutex buflock;
 };
-
+#undef CONFIG_DEBUG_FS
 #if defined(CONFIG_DEBUG_FS)
 struct dentry *sde_rotator_create_debugfs(
 		struct sde_rotator_device *rot_dev);

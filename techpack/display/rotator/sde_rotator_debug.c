@@ -625,6 +625,7 @@ static void sde_rot_evtlog_debug_work(struct work_struct *work)
  * @queue: boolean indicate putting log dump into queue
  * @name: function name having timeout
  */
+#if defined(CONFIG_MSM_SDE_ROTATOR_EVTLOG_DEBUG)
 void sde_rot_evtlog_tout_handler(bool queue, const char *name, ...)
 {
 	int i;
@@ -717,6 +718,7 @@ void sde_rot_evtlog(const char *name, int line, int flag, ...)
 
 	spin_unlock_irqrestore(&sde_rot_xlock, flags);
 }
+#endif
 
 /*
  * sde_rotator_stat_show - Show statistics on read to this debugfs file
@@ -1264,7 +1266,7 @@ static const struct file_operations sde_rotator_reg_fops = {
 	.read = sde_rotator_debug_base_reg_read,
 	.write = sde_rotator_debug_base_reg_write,
 };
-
+#ifdef CONFIG_DEBUG_FS
 /*
  * sde_rotator_create_debugfs - Setup rotator debugfs directory structure.
  * @rot_dev: Pointer to rotator device
@@ -1361,3 +1363,4 @@ void sde_rotator_destroy_debugfs(struct dentry *debugfs)
 {
 	debugfs_remove_recursive(debugfs);
 }
+#endif

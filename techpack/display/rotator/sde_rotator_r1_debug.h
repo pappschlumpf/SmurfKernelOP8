@@ -10,7 +10,7 @@
 #include <linux/dcache.h>
 
 struct sde_rot_mgr;
-
+#undef CONFIG_DEBUG_FS
 #if defined(CONFIG_DEBUG_FS)
 int sde_rotator_r1_create_debugfs(struct sde_rot_mgr *mgr,
 		struct dentry *debugfs_root);
