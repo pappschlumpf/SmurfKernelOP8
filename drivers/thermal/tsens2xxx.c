@@ -115,8 +115,6 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 			udelay(500);
 			code = readl_relaxed_no_log(trdy);
 			if (code & TSENS_TM_TRDY_FIRST_ROUND_COMPLETE) {
-				TSENS_DUMP(tmdev, "%s",
-					"tsens controller recovered\n");
 				goto sensor_read;
 			}
 		} while (++count < TSENS_RECOVERY_LOOP_COUNT);
@@ -136,10 +134,6 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 
 			atomic_set(&in_tsens_reinit, 1);
 
-			if (tmdev->ops->dbg)
-				tmdev->ops->dbg(tmdev, 0,
-					TSENS_DBG_LOG_BUS_ID_DATA, NULL);
-
 			if (tmdev->tsens_reinit_cnt >=
 					TSENS_RE_INIT_MAX_COUNT) {
 				pr_err(
@@ -149,12 +143,8 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 			}
 
 			/* Make an scm call to re-init TSENS */
-			TSENS_DBG(tmdev, "%s",
-				   "Calling TZ to re-init TSENS\n");
 			ret = scm_call2(SCM_SIP_FNID(SCM_SVC_TSENS,
 							TSENS_INIT_ID), &desc);
-			TSENS_DBG(tmdev, "%s",
-				   "return from scm call\n");
 			if (ret) {
 				pr_err("%s: scm call failed %d\n",
 					__func__, ret);
@@ -180,9 +170,6 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 			pr_err("%s: tsens controller got reset\n", __func__);
 			tmdev->trdy_fail_ctr++;
 			if (tmdev->trdy_fail_ctr >= 50) {
-				if (tmdev->ops->dbg)
-					tmdev->ops->dbg(tmdev, 0,
-						TSENS_DBG_LOG_BUS_ID_DATA, NULL);
 				BUG();
 			}
 		}
@@ -230,10 +217,6 @@ sensor_read:
 	msm_tsens_convert_temp(last_temp, temp);
 
 dbg:
-	if (tmdev->ops->dbg)
-		tmdev->ops->dbg(tmdev, (u32) sensor->hw_id,
-					TSENS_DBG_LOG_TEMP_READS, temp);
-
 	return 0;
 }
 
@@ -260,9 +243,6 @@ int tsens_2xxx_get_min_temp(struct tsens_sensor *sensor, int *temp)
 			code, tmdev->trdy_fail_ctr);
 		tmdev->trdy_fail_ctr++;
 		if (tmdev->trdy_fail_ctr >= TSENS_MAX_READ_FAIL) {
-			if (tmdev->ops->dbg)
-				tmdev->ops->dbg(tmdev, 0,
-					TSENS_DBG_LOG_BUS_ID_DATA, NULL);
 			BUG();
 		}
 		return -ENODATA;
@@ -301,8 +281,6 @@ int tsens_2xxx_get_min_temp(struct tsens_sensor *sensor, int *temp)
 	msm_tsens_convert_temp(last_temp, temp);
 
 dbg:
-	TSENS_DBG(tmdev, "Min temp: %d\n", *temp);
-
 	return 0;
 }
 
@@ -389,9 +367,6 @@ static int tsens2xxx_set_trip_temp(struct tsens_sensor *tm_sensor,
 	tmdev = tm_sensor->tmdev;
 	if (!tmdev)
 		return -EINVAL;
-
-	pr_debug("%s: sensor:%d low_temp(mdegC):%d, high_temp(mdegC):%d\n",
-			__func__, tm_sensor->hw_id, low_temp, high_temp);
 
 	spin_lock_irqsave(&tmdev->tsens_upp_low_lock, flags);
 
@@ -505,13 +480,6 @@ static irqreturn_t tsens_tm_critical_irq_thread(int irq, void *data)
 				(TSENS_TM_CRITICAL_INT_CLEAR
 				(tm->tsens_tm_addr)));
 			wd_log = readl_relaxed(wd_log_addr);
-			if (wd_log >= TSENS_DEBUG_WDOG_TRIGGER_COUNT) {
-				pr_err("Watchdog count:%d\n", wd_log);
-				if (tm->ops->dbg)
-					tm->ops->dbg(tm, 0,
-					TSENS_DBG_LOG_BUS_ID_DATA, NULL);
-				BUG();
-			}
 
 			return IRQ_HANDLED;
 		}
@@ -671,9 +639,6 @@ static irqreturn_t tsens_tm_irq_thread(int irq, void *data)
 	/* Disable monitoring sensor trip threshold for triggered sensor */
 	mb();
 
-	if (tm->ops->dbg)
-		tm->ops->dbg(tm, 0, TSENS_DBG_LOG_INTERRUPT_TIMESTAMP, NULL);
-
 	return IRQ_HANDLED;
 }
 
@@ -774,11 +739,6 @@ static int tsens2xxx_hw_init(struct tsens_device *tmdev)
 
 	spin_lock_init(&tmdev->tsens_crit_lock);
 	spin_lock_init(&tmdev->tsens_upp_low_lock);
-
-	if (tmdev->ctrl_data->mtc) {
-		if (tmdev->ops->dbg)
-			tmdev->ops->dbg(tmdev, 0, TSENS_DBG_MTC_DATA, NULL);
-	}
 
 	return 0;
 }

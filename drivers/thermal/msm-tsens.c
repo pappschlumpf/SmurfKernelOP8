@@ -262,7 +262,6 @@ static void tsens_therm_fwk_notify(struct work_struct *work)
 	struct tsens_device *tmdev =
 		container_of(work, struct tsens_device, therm_fwk_notify);
 
-	TSENS_DBG(tmdev, "Controller %pK\n", &tmdev->phys_addr_tm);
 	for (i = 0; i < TSENS_MAX_SENSORS; i++) {
 		if (tmdev->ops->sensor_en(tmdev, i)) {
 			rc = tsens_get_temp(&tmdev->sensor[i], &temp);
@@ -271,8 +270,6 @@ static void tsens_therm_fwk_notify(struct work_struct *work)
 					__func__, rc, i);
 				continue;
 			}
-			TSENS_DBG(tmdev, "Calling trip_temp for sensor %d\n",
-					i);
 			of_thermal_handle_trip_temp(tmdev->sensor[i].tzd, temp);
 		}
 	}
@@ -283,7 +280,6 @@ static void tsens_therm_fwk_notify(struct work_struct *work)
 				   __func__, rc, i);
 			return;
 		}
-		TSENS_DBG(tmdev, "Calling trip_temp for sensor %d\n", i);
 		of_thermal_handle_trip_temp(tmdev->min_temp.tzd, temp);
 	}
 }
