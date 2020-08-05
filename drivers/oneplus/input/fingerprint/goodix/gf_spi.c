@@ -581,6 +581,7 @@ int opticalfp_irq_handler(struct fp_underscreen_info* tp_info)
 	if (gf.spi == NULL) {
 		return 0;
 	}
+	fp_tpinfo = *tp_info; fp_tpinfo.y,fp_tpinfo.touch_state;
 	if (fp_tpinfo.touch_state == 1) {
 		fp_tpinfo.touch_state = GF_NET_EVENT_TP_TOUCHDOWN;
 		sendnlmsg_tp(&fp_tpinfo,sizeof(fp_tpinfo));
