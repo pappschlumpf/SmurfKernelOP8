@@ -52,7 +52,7 @@ static bool _sde_evtlog_is_filtered_no_lock(
 
 bool sde_evtlog_is_enabled(struct sde_dbg_evtlog *evtlog, u32 flag)
 {
-	return evtlog && (evtlog->enable & flag);
+	return false;
 }
 
 void sde_evtlog_log(struct sde_dbg_evtlog *evtlog, const char *name, int line,

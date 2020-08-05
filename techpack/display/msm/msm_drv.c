@@ -118,7 +118,7 @@ static const struct drm_mode_config_funcs mode_config_funcs = {
 static const struct drm_mode_config_helper_funcs mode_config_helper_funcs = {
 	.atomic_commit_tail = msm_atomic_commit_tail,
 };
-
+#undef CONFIG_DRM_MSM_REGISTER_LOGGING
 #ifdef CONFIG_DRM_MSM_REGISTER_LOGGING
 static bool reglog = false;
 MODULE_PARM_DESC(reglog, "Enable register read/write logging");

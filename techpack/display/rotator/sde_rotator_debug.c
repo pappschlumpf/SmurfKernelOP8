@@ -15,7 +15,7 @@
 #include "sde_rotator_core.h"
 #include "sde_rotator_dev.h"
 #include "sde_rotator_trace.h"
-
+#undef CONFIG_MSM_SDE_ROTATOR_EVTLOG_DEBUG
 #ifdef CONFIG_MSM_SDE_ROTATOR_EVTLOG_DEBUG
 #define SDE_EVTLOG_DEFAULT_ENABLE 1
 #else
