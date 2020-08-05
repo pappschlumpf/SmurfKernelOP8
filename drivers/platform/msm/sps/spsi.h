@@ -130,95 +130,49 @@ extern u8 print_limit_option;
 				pr_debug("sps: no such IPC logging index!\n"); \
 		} \
 	} while (0)
-#define SPS_DUMP(msg, args...) do {					\
-		SPS_IPC(4, sps, msg, args); \
-		if (sps) { \
-			if (sps->ipc_log4 == NULL) \
-				pr_info(msg, ##args);	\
-		} \
-	} while (0)
-#define SPS_ERR(dev, msg, args...) do {					\
-		if (logging_option != 1) {	\
-			if (unlikely(print_limit_option > 2))	\
-				pr_err_ratelimited(msg, ##args);	\
-			else	\
-				pr_err(msg, ##args);	\
-		}	\
-		SPS_IPC(3, dev, msg, args); \
-	} while (0)
-#define SPS_INFO(dev, msg, args...) do {				\
-		if (logging_option != 1) {	\
-			if (unlikely(print_limit_option > 1))	\
-				pr_info_ratelimited(msg, ##args);	\
-			else	\
-				pr_info(msg, ##args);	\
-		}	\
-		SPS_IPC(3, dev, msg, args); \
-	} while (0)
+#define	SPS_DBG3(dev, msg, args...) do {				\
+		no_printk(msg, ##args);     					\
+	} while (0) 										
+#define	SPS_DBG2(dev, msg, args...) do {				\
+		no_printk(msg, ##args);     					\
+	} while (0) 										
+#define	SPS_DBG1(dev, msg, args...) do {				\
+		no_printk(msg, ##args);     					\
+	} while (0) 										
 #define SPS_DBG(dev, msg, args...) do {					\
-		if ((unlikely(logging_option > 1))	\
-			&& (unlikely(debug_level_option > 3))) {\
-			if (unlikely(print_limit_option > 0))	\
-				pr_info_ratelimited(msg, ##args);	\
-			else	\
-				pr_info(msg, ##args);	\
-		} else	\
-			pr_debug(msg, ##args);	\
-		if (dev) { \
-			if ((dev)->ipc_loglevel <= 0)	\
-				SPS_IPC(0, dev, msg, args); \
-		}	\
-	} while (0)
-#define SPS_DBG1(dev, msg, args...) do {				\
-		if ((unlikely(logging_option > 1))	\
-			&& (unlikely(debug_level_option > 2))) {\
-			if (unlikely(print_limit_option > 0))	\
-				pr_info_ratelimited(msg, ##args);	\
-			else	\
-				pr_info(msg, ##args);	\
-		} else	\
-			pr_debug(msg, ##args);	\
-		if (dev) { \
-			if ((dev)->ipc_loglevel <= 1)	\
-				SPS_IPC(1, dev, msg, args);	\
-		}	\
-	} while (0)
-#define SPS_DBG2(dev, msg, args...) do {				\
-		if ((unlikely(logging_option > 1))	\
-			&& (unlikely(debug_level_option > 1))) {\
-			if (unlikely(print_limit_option > 0))	\
-				pr_info_ratelimited(msg, ##args);	\
-			else	\
-				pr_info(msg, ##args);	\
-		} else	\
-			pr_debug(msg, ##args);	\
-		if (dev) { \
-			if ((dev)->ipc_loglevel <= 2)	\
-				SPS_IPC(2, dev, msg, args); \
-		}	\
-	} while (0)
-#define SPS_DBG3(dev, msg, args...) do {				\
-		if ((unlikely(logging_option > 1))	\
-			&& (unlikely(debug_level_option > 0))) {\
-			if (unlikely(print_limit_option > 0))	\
-				pr_info_ratelimited(msg, ##args);	\
-			else	\
-				pr_info(msg, ##args);	\
-		} else	\
-			pr_debug(msg, ##args);	\
-		if (dev) { \
-			if ((dev)->ipc_loglevel <= 3)	\
-				SPS_IPC(3, dev, msg, args); \
-		}	\
-	} while (0)
+		no_printk(msg, ##args);     					\
+	} while (0) 										
+#define	SPS_INFO(dev, msg, args...) do {					\
+		no_printk(msg, ##args);     					\
+	} while (0) 
+#define SPS_ERR(dev, msg, args...) do {					\
+		no_printk(msg, ##args);     					\
+	} while (0) 
+#define	SPS_DUMP(msg, args...) do {					\
+		no_printk(msg, ##args);     					\
+	} while (0) 
 #else
-#define	SPS_DBG3(x...)		pr_debug(x)
-#define	SPS_DBG2(x...)		pr_debug(x)
-#define	SPS_DBG1(x...)		pr_debug(x)
-#define	SPS_DBG(x...)		pr_debug(x)
-#define	SPS_INFO(x...)		pr_info(x)
-#define	SPS_ERR(x...)		pr_err(x)
-#define	SPS_DUMP(x...)		pr_info(x)
+#define	SPS_DBG3(dev, msg, args...) do {				\
+		no_printk(msg, ##args);     					\
+	} while (0) 										
+#define	SPS_DBG2(dev, msg, args...) do {				\
+		no_printk(msg, ##args);     					\
+	} while (0) 										
+#define	SPS_DBG1(dev, msg, args...) do {				\
+		no_printk(msg, ##args);     					\
+	} while (0) 										
+#define SPS_DBG(dev, msg, args...) do {					\
+		no_printk(msg, ##args);     					\
+	} while (0) 										
+#define	SPS_INFO(dev, msg, args...) do {					\
+		no_printk(msg, ##args);     					\
+	} while (0) 
+#define SPS_ERR(dev, msg, args...) do {					\
+		no_printk(msg, ##args);     					\
+	} while (0) 
+#define	SPS_DUMP(msg, args...) do {					\
+		no_printk(msg, ##args);     					\
+	} while (0) 
 #endif
 
 /* End point parameters */
