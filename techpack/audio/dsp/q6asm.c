@@ -145,7 +145,6 @@ struct generic_get_data_ {
 };
 static struct generic_get_data_ *generic_get_data;
 
-#ifdef CONFIG_DEBUG_FS
 #define OUT_BUFFER_SIZE 56
 #define IN_BUFFER_SIZE 24
 
@@ -155,11 +154,13 @@ static struct timeval out_cont_tv;
 static struct timeval in_cont_tv;
 static long out_enable_flag;
 static long in_enable_flag;
+#ifdef CONFIG_DEBUG_FS
 static struct dentry *out_dentry;
 static struct dentry *in_dentry;
 static int in_cont_index;
 /*This var is used to keep track of first write done for cold output latency */
 static int out_cold_index;
+#endif
 static char *out_buffer;
 static char *in_buffer;
 
@@ -311,9 +312,9 @@ static ssize_t audio_output_latency_dbgfs_write(struct file *file,
 		return -EINVAL;
 	}
 	temp  = kmalloc(2*sizeof(char), GFP_KERNEL);
-
+#ifdef CONFIG_DEBUG_FS
 	out_cold_index = 0;
-
+#endif
 	if (temp) {
 		if (copy_from_user(temp, buf, 2*sizeof(char))) {
 			pr_err("%s: copy from user failed for size %zd\n",
@@ -388,7 +389,7 @@ static const struct file_operations audio_input_latency_debug_fops = {
 	.read = audio_input_latency_dbgfs_read,
 	.write = audio_input_latency_dbgfs_write
 };
-
+#ifdef CONFIG_DEBUG_FS
 /*
  * get_monotonic_timeval -
  *       This method returns a structure in timeval
