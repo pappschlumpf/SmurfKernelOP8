@@ -30,7 +30,7 @@
 #define GSI_CHNL_STATE_MAX_RETRYCNT 10
 
 #define GSI_STTS_REG_BITS 32
-
+#undef CONFIG_DEBUG_FS
 #ifndef CONFIG_DEBUG_FS
 void gsi_debugfs_init(void)
 {
