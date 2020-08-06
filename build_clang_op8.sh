@@ -26,7 +26,7 @@ export SPL="2020-05"
 DEFCONFIG="smurfop8_defconfig"
 
 # Kernel Details
-VER=".SmurfKernelOP8.1.0.0.unified"
+VER="..1.0.0.unified"
 
 # Paths
 KERNEL_DIR=`pwd`
@@ -92,7 +92,7 @@ echo -e "${restore}"
 
 
 # Vars
-BASE_AK_VER="SmurfKernel"
+BASE_AK_VER="SmurfKernelOP8"
 AK_VER="$BASE_AK_VER$VER"
 export LOCALVERSION=~`echo $AK_VER`
 export LOCALVERSION=~`echo $AK_VER`
