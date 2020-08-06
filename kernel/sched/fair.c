@@ -8999,18 +8999,18 @@ static int detach_tasks(struct lb_env *env)
 
 	// curtis@ASTI, 2019/4/29, add for uxrealm CONFIG_OPCHAIN
 #ifdef CONFIG_OPCHAIN
-	if (capacity_of(env->dst_cpu) < capacity_of(env->src_cpu)) {
+		if (capacity_of(env->dst_cpu) < capacity_of(env->src_cpu)) {
 #else
-	if (capacity_orig_of(env->dst_cpu) <
-				capacity_orig_of(env->src_cpu))
+		if (capacity_orig_of(env->dst_cpu) <
+					capacity_orig_of(env->src_cpu))
 #endif
-		env->flags |= LBF_IGNORE_BIG_TASKS;
+			env->flags |= LBF_IGNORE_BIG_TASKS;
 #ifdef CONFIG_OPCHAIN
-		if (src_claim == 1)
-			env->flags |= LBF_IGNORE_UX_TOP | LBF_IGNORE_SLAVE;
-		else if (src_claim == -1)
-			env->flags |= LBF_IGNORE_SLAVE;
-	}
+			if (src_claim == 1)
+				env->flags |= LBF_IGNORE_UX_TOP | LBF_IGNORE_SLAVE;
+			else if (src_claim == -1)
+				env->flags |= LBF_IGNORE_SLAVE;
+		}
 #endif
 	}
 
