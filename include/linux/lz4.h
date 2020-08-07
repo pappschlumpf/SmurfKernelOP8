@@ -221,30 +221,6 @@ int LZ4_compress_default(const char *source, char *dest, int inputSize,
 static int LZ4_compress_fast(const char *source, char *dest, int inputSize,
 	int maxOutputSize, int acceleration, void *wrkmem);
 
-/**
- * LZ4_compress_destSize() - Compress as much data as possible
- *	from source to dest
- * @source: source address of the original data
- * @dest: output buffer address of the compressed data
- * @sourceSizePtr: will be modified to indicate how many bytes where read
- *	from 'source' to fill 'dest'. New value is necessarily <= old value.
- * @targetDestSize: Size of buffer 'dest' which must be already allocated
- * @wrkmem: address of the working memory.
- *	This requires 'workmem' of LZ4_MEM_COMPRESS.
- *
- * Reverse the logic, by compressing as much data as possible
- * from 'source' buffer into already allocated buffer 'dest'
- * of size 'targetDestSize'.
- * This function either compresses the entire 'source' content into 'dest'
- * if it's large enough, or fill 'dest' buffer completely with as much data as
- * possible from 'source'.
- *
- * Return: Number of bytes written into 'dest' (necessarily <= targetDestSize)
- *	or 0 if compression fails
- */
-static int LZ4_compress_destSize(const char *source, char *dest, int *sourceSizePtr,
-	int targetDestSize, void *wrkmem);
-
 /*-************************************************************************
  *	Decompression Functions
  **************************************************************************/
@@ -291,34 +267,6 @@ int LZ4_decompress_fast(const char *source, char *dest, int originalSize);
  */
 int LZ4_decompress_safe(const char *source, char *dest, int compressedSize,
 	int maxDecompressedSize);
-
-/**
- * LZ4_decompress_safe_partial() - Decompress a block of size 'compressedSize'
- *	at position 'source' into buffer 'dest'
- * @source: source address of the compressed data
- * @dest: output buffer address of the decompressed data which must be
- *	already allocated
- * @compressedSize: is the precise full size of the compressed block.
- * @targetOutputSize: the decompression operation will try
- *	to stop as soon as 'targetOutputSize' has been reached
- * @maxDecompressedSize: is the size of destination buffer
- *
- * This function decompresses a compressed block of size 'compressedSize'
- * at position 'source' into destination buffer 'dest'
- * of size 'maxDecompressedSize'.
- * The function tries to stop decompressing operation as soon as
- * 'targetOutputSize' has been reached, reducing decompression time.
- * This function never writes outside of output buffer,
- * and never reads outside of input buffer.
- * It is therefore protected against malicious data packets.
- *
- * Return: the number of bytes decoded in the destination buffer
- *	(necessarily <= maxDecompressedSize)
- *	or a negative result in case of error
- *
- */
-static int LZ4_decompress_safe_partial(const char *source, char *dest,
-	int compressedSize, int targetOutputSize, int maxDecompressedSize);
 
 /*-************************************************************************
  *	LZ4 HC Compression
@@ -431,8 +379,6 @@ static int LZ4_compress_HC_continue(LZ4_streamHC_t *streamHCPtr, const char *src
  * Return : saved dictionary size in bytes (necessarily <= maxDictSize),
  *	or 0 if error.
  */
-static int LZ4_saveDictHC(LZ4_streamHC_t *streamHCPtr, char *safeBuffer,
-	int maxDictSize);
 
 /*-*********************************************
  *	Streaming Compression Functions
@@ -482,167 +428,5 @@ int LZ4_loadDict(LZ4_stream_t *streamPtr, const char *dictionary,
  *	or 0 if error.
  */
 int LZ4_saveDict(LZ4_stream_t *streamPtr, char *safeBuffer, int dictSize);
-
-/**
- * LZ4_compress_fast_continue() - Compress 'src' using data from previously
- *	compressed blocks as a dictionary
- * @streamPtr: Pointer to the previous 'LZ4_stream_t' structure
- * @src: source address of the original data
- * @dst: output buffer address of the compressed data,
- *	which must be already allocated
- * @srcSize: size of the input data. Max supported value is LZ4_MAX_INPUT_SIZE
- * @maxDstSize: full or partial size of buffer 'dest'
- *	which must be already allocated
- * @acceleration: acceleration factor
- *
- * Compress buffer content 'src', using data from previously compressed blocks
- * as dictionary to improve compression ratio.
- * Important : Previous data blocks are assumed to still
- * be present and unmodified !
- * If maxDstSize >= LZ4_compressBound(srcSize),
- * compression is guaranteed to succeed, and runs faster.
- *
- * Return: Number of bytes written into buffer 'dst'  or 0 if compression fails
- */
-static int LZ4_compress_fast_continue(LZ4_stream_t *streamPtr, const char *src,
-	char *dst, int srcSize, int maxDstSize, int acceleration);
-
-/**
- * LZ4_setStreamDecode() - Instruct where to find dictionary
- * @LZ4_streamDecode: the 'LZ4_streamDecode_t' structure
- * @dictionary: dictionary to use
- * @dictSize: size of dictionary
- *
- * Use this function to instruct where to find the dictionary.
- *	Setting a size of 0 is allowed (same effect as reset).
- *
- * Return: 1 if OK, 0 if error
- */
-static int LZ4_setStreamDecode(LZ4_streamDecode_t *LZ4_streamDecode,
-	const char *dictionary, int dictSize);
-
-/**
- * LZ4_decompress_fast_continue() - Decompress blocks in streaming mode
- * @LZ4_streamDecode: the 'LZ4_streamDecode_t' structure
- * @source: source address of the compressed data
- * @dest: output buffer address of the uncompressed data
- *	which must be already allocated
- * @compressedSize: is the precise full size of the compressed block
- * @maxDecompressedSize: is the size of 'dest' buffer
- *
- * These decoding function allows decompression of multiple blocks
- * in "streaming" mode.
- * Previously decoded blocks *must* remain available at the memory position
- * where they were decoded (up to 64 KB)
- * In the case of a ring buffers, decoding buffer must be either :
- *    - Exactly same size as encoding buffer, with same update rule
- *      (block boundaries at same positions) In which case,
- *      the decoding & encoding ring buffer can have any size,
- *      including very small ones ( < 64 KB).
- *    - Larger than encoding buffer, by a minimum of maxBlockSize more bytes.
- *      maxBlockSize is implementation dependent.
- *      It's the maximum size you intend to compress into a single block.
- *      In which case, encoding and decoding buffers do not need
- *      to be synchronized, and encoding ring buffer can have any size,
- *      including small ones ( < 64 KB).
- *    - _At least_ 64 KB + 8 bytes + maxBlockSize.
- *      In which case, encoding and decoding buffers do not need to be
- *      synchronized, and encoding ring buffer can have any size,
- *      including larger than decoding buffer. W
- * Whenever these conditions are not possible, save the last 64KB of decoded
- * data into a safe buffer, and indicate where it is saved
- * using LZ4_setStreamDecode()
- *
- * Return: number of bytes decompressed into destination buffer
- *	(necessarily <= maxDecompressedSize)
- *	or a negative result in case of error
- */
-static int LZ4_decompress_safe_continue(LZ4_streamDecode_t *LZ4_streamDecode,
-	const char *source, char *dest, int compressedSize,
-	int maxDecompressedSize);
-
-/**
- * LZ4_decompress_fast_continue() - Decompress blocks in streaming mode
- * @LZ4_streamDecode: the 'LZ4_streamDecode_t' structure
- * @source: source address of the compressed data
- * @dest: output buffer address of the uncompressed data
- *	which must be already allocated with 'originalSize' bytes
- * @originalSize: is the original and therefore uncompressed size
- *
- * These decoding function allows decompression of multiple blocks
- * in "streaming" mode.
- * Previously decoded blocks *must* remain available at the memory position
- * where they were decoded (up to 64 KB)
- * In the case of a ring buffers, decoding buffer must be either :
- *    - Exactly same size as encoding buffer, with same update rule
- *      (block boundaries at same positions) In which case,
- *      the decoding & encoding ring buffer can have any size,
- *      including very small ones ( < 64 KB).
- *    - Larger than encoding buffer, by a minimum of maxBlockSize more bytes.
- *      maxBlockSize is implementation dependent.
- *      It's the maximum size you intend to compress into a single block.
- *      In which case, encoding and decoding buffers do not need
- *      to be synchronized, and encoding ring buffer can have any size,
- *      including small ones ( < 64 KB).
- *    - _At least_ 64 KB + 8 bytes + maxBlockSize.
- *      In which case, encoding and decoding buffers do not need to be
- *      synchronized, and encoding ring buffer can have any size,
- *      including larger than decoding buffer. W
- * Whenever these conditions are not possible, save the last 64KB of decoded
- * data into a safe buffer, and indicate where it is saved
- * using LZ4_setStreamDecode()
- *
- * Return: number of bytes decompressed into destination buffer
- *	(necessarily <= maxDecompressedSize)
- *	or a negative result in case of error
- */
-static int LZ4_decompress_fast_continue(LZ4_streamDecode_t *LZ4_streamDecode,
-	const char *source, char *dest, int originalSize);
-
-/**
- * LZ4_decompress_safe_usingDict() - Same as LZ4_setStreamDecode()
- *	followed by LZ4_decompress_safe_continue()
- * @source: source address of the compressed data
- * @dest: output buffer address of the uncompressed data
- *	which must be already allocated
- * @compressedSize: is the precise full size of the compressed block
- * @maxDecompressedSize: is the size of 'dest' buffer
- * @dictStart: pointer to the start of the dictionary in memory
- * @dictSize: size of dictionary
- *
- * These decoding function works the same as
- * a combination of LZ4_setStreamDecode() followed by
- * LZ4_decompress_safe_continue()
- * It is stand-alone, and don'tn eed a LZ4_streamDecode_t structure.
- *
- * Return: number of bytes decompressed into destination buffer
- *	(necessarily <= maxDecompressedSize)
- *	or a negative result in case of error
- */
-static int LZ4_decompress_safe_usingDict(const char *source, char *dest,
-	int compressedSize, int maxDecompressedSize, const char *dictStart,
-	int dictSize);
-
-/**
- * LZ4_decompress_fast_usingDict() - Same as LZ4_setStreamDecode()
- *	followed by LZ4_decompress_fast_continue()
- * @source: source address of the compressed data
- * @dest: output buffer address of the uncompressed data
- *	which must be already allocated with 'originalSize' bytes
- * @originalSize: is the original and therefore uncompressed size
- * @dictStart: pointer to the start of the dictionary in memory
- * @dictSize: size of dictionary
- *
- * These decoding function works the same as
- * a combination of LZ4_setStreamDecode() followed by
- * LZ4_decompress_safe_continue()
- * It is stand-alone, and don'tn eed a LZ4_streamDecode_t structure.
- *
- * Return: number of bytes decompressed into destination buffer
- *	(necessarily <= maxDecompressedSize)
- *	or a negative result in case of error
- */
-static int LZ4_decompress_fast_usingDict(const char *source, char *dest,
-	int originalSize, const char *dictStart, int dictSize);
 
 #endif
