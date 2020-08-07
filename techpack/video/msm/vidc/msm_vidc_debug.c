@@ -621,15 +621,7 @@ int get_sid(u32 *sid, u32 session_type)
 }
 
 void put_sid(u32 sid)
-{
-	if (!sid || sid > MAX_SUPPORTED_INSTANCES) {
-		d_vpr_e("%s: invalid sid %#x\n",
-			__func__, sid);
-		return;
-	}
-	if (ctxt[sid-1].used)
-		ctxt[sid-1].used = 0;
-}
+{}
 
 inline void update_log_ctxt(u32 sid, u32 session_type, u32 fourcc)
 {
@@ -700,7 +692,7 @@ inline void update_log_ctxt(u32 sid, u32 session_type, u32 fourcc)
 	ctxt[sid-1].name[5] = '\0';
 }
 
-inline char *get_codec_name(u32 sid)
+char *get_codec_name(u32 sid)
 {
 	if (!sid || sid > MAX_SUPPORTED_INSTANCES)
 		return ".....";
@@ -714,19 +706,7 @@ inline char *get_codec_name(u32 sid)
  * 2xx -> allow only decoder prints
  * 4xx -> allow only cvp prints
  */
-inline bool is_print_allowed(u32 sid, u32 level)
+bool is_print_allowed(u32 sid, u32 level)
 {
-	if (!(msm_vidc_debug & level))
-		return false;
-
-	if (!((msm_vidc_debug >> 8) & 0xF))
-		return true;
-
-	if (!sid || sid > MAX_SUPPORTED_INSTANCES)
-		return true;
-
-	if (ctxt[sid-1].session_type & msm_vidc_debug)
-		return true;
-
 	return false;
 }
