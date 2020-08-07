@@ -52,7 +52,7 @@ function make_kernel {
 	      cp ../SmurfKernelOP8/Makefile.clang ../SmurfKernelOP8/Makefile
 	      echo
               make ARCH=arm64 O=out $DEFCONFIG
-              make ARCH=arm64 O=out CC=clang CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- $THREAD
+              make ARCH=arm64 O=out CC="ccache clang" CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- $THREAD
 }
 
 function make_modules {
