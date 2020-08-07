@@ -61,10 +61,10 @@ extern void cpu_input_boost_kick_cluster2(unsigned int duration_ms);
 extern void cpu_input_boost_kick_cluster1_wake(unsigned int duration_ms);
 extern void cpu_input_boost_kick_cluster2_wake(unsigned int duration_ms);
 extern void gpu_boost_flex(unsigned int duration_ms);
-extern unsigned int get_input_boost_freq(struct cpufreq_policy *policy);
-extern unsigned int get_max_boost_freq(struct cpufreq_policy *policy, int stage);
-extern unsigned int get_flex_boost_freq(struct cpufreq_policy *policy, int stage);
-extern unsigned int get_min_freq(struct cpufreq_policy *policy);
+extern inline unsigned int get_input_boost_freq(struct cpufreq_policy *policy);
+extern inline unsigned int get_max_boost_freq(struct cpufreq_policy *policy, int stage);
+extern inline unsigned int get_flex_boost_freq(struct cpufreq_policy *policy, int stage);
+extern inline unsigned int get_min_freq(struct cpufreq_policy *policy);
 #else
 void cpu_input_boost_kick_ufs(unsigned int duration_ms)
 {

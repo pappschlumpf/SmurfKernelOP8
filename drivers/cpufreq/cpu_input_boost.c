@@ -170,7 +170,7 @@ static struct boost_drv boost_drv_g __read_mostly = {
 	.stune_boost_waitq = __WAIT_QUEUE_HEAD_INITIALIZER(boost_drv_g.stune_boost_waitq)
 };
 
-unsigned int get_input_boost_freq(struct cpufreq_policy *policy)
+inline unsigned int get_input_boost_freq(struct cpufreq_policy *policy)
 {
 	if (cpumask_test_cpu(policy->cpu, cpu_lp_mask))
 		return input_boost_freq_lp;
@@ -179,7 +179,7 @@ unsigned int get_input_boost_freq(struct cpufreq_policy *policy)
 	return  input_boost_freq_gold; 
 }
 
-unsigned int get_max_boost_freq(struct cpufreq_policy *policy, int stage)
+inline unsigned int get_max_boost_freq(struct cpufreq_policy *policy, int stage)
 {
 	if (cpumask_test_cpu(policy->cpu, cpu_lp_mask)) {
 		switch (stage) {
@@ -208,9 +208,10 @@ unsigned int get_max_boost_freq(struct cpufreq_policy *policy, int stage)
 		case 2: return max_boost_freq_gold_2;
 			break;
 	}
+	return max_boost_freq_gold;
 }
 
-unsigned int get_flex_boost_freq(struct cpufreq_policy *policy, int stage)
+inline unsigned int get_flex_boost_freq(struct cpufreq_policy *policy, int stage)
 {
 	if (cpumask_test_cpu(policy->cpu, cpu_lp_mask)) {
 		switch (stage) {
@@ -233,9 +234,10 @@ unsigned int get_flex_boost_freq(struct cpufreq_policy *policy, int stage)
 		case 1: return flex_boost_freq_gold_1;
 			break;
 	}
+	return flex_boost_freq_gold;
 }
 
-unsigned int get_min_freq(struct cpufreq_policy *policy)
+inline unsigned int get_min_freq(struct cpufreq_policy *policy)
 {
 	if (cpumask_test_cpu(policy->cpu, cpu_lp_mask))
 		return remove_input_boost_freq_lp;
@@ -364,7 +366,6 @@ static void __cpu_input_boost_kick_core(struct boost_drv *b,
 
 void cpu_input_boost_kick_core(unsigned int duration_ms, unsigned int cpu)
 {
-	unsigned long boost_jiffies = msecs_to_jiffies(duration_ms);
 	struct boost_drv *b = &boost_drv_g;
 
 	if (duration_ms == 0)
@@ -431,7 +432,6 @@ static void __cpu_input_boost_kick_cluster2(struct boost_drv *b,
 
 void cpu_input_boost_kick_ufs(unsigned int duration_ms)
 {
-	unsigned long boost_jiffies = msecs_to_jiffies(duration_ms);
 	struct boost_drv *b = &boost_drv_g;
 
 	if (duration_ms == 0)
@@ -445,7 +445,6 @@ void cpu_input_boost_kick_ufs(unsigned int duration_ms)
 
 void cpu_input_boost_kick_cluster1(unsigned int duration_ms)
 {
-	unsigned long boost_jiffies = msecs_to_jiffies(duration_ms);
 	struct boost_drv *b = &boost_drv_g;
 
 	if (duration_ms == 0)
@@ -459,7 +458,6 @@ void cpu_input_boost_kick_cluster1(unsigned int duration_ms)
 
 void cpu_input_boost_kick_cluster2(unsigned int duration_ms)
 {
-	unsigned long boost_jiffies = msecs_to_jiffies(duration_ms);
 	struct boost_drv *b = &boost_drv_g;
 
 	if (little_only || duration_ms == 0)
@@ -506,7 +504,6 @@ static void __cpu_input_boost_kick_cluster2_wake(struct boost_drv *b,
 
 void cpu_input_boost_kick_cluster1_wake(unsigned int duration_ms)
 {
-	unsigned long boost_jiffies = msecs_to_jiffies(duration_ms);
 	struct boost_drv *b = &boost_drv_g;
 
 	if (duration_ms == 0)
@@ -517,7 +514,6 @@ void cpu_input_boost_kick_cluster1_wake(unsigned int duration_ms)
 
 void cpu_input_boost_kick_cluster2_wake(unsigned int duration_ms)
 {
-	unsigned long boost_jiffies = msecs_to_jiffies(duration_ms);
 	struct boost_drv *b = &boost_drv_g;
 
 	if (duration_ms == 0)
@@ -801,7 +797,6 @@ static int cpu_notifier_cb(struct notifier_block *nb, unsigned long action,
 {
 	struct boost_drv *b = container_of(nb, typeof(*b), cpu_notif);
 	struct cpufreq_policy *policy = data;
-	unsigned int min_freq;
 
 	if (action != CPUFREQ_ADJUST)
 		return NOTIFY_OK;
@@ -1083,8 +1078,8 @@ static int __init cpu_input_boost_init(void)
 	struct task_struct *boost_thread_gpu;
 	struct task_struct *boost_thread_stune;
 	struct boost_drv *b = &boost_drv_g;
-	gov_cpu_state = &boost_drv_g;
 	int ret;
+	gov_cpu_state = &boost_drv_g;
 	
 	b->cpu_state = 0;
 	b->gpu_state = 0;
